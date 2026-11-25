@@ -1,19 +1,27 @@
 /* Ponto de partida: abas, ações gerais e inicialização. */
+/* Uma tela com problema não pode deixar as outras em branco. */
+function desenharTela(tela) {
+  try { tela(); } catch (e) {
+    console.error(e);
+    setSync("Uma parte da tela não carregou. Aperte Ctrl+F5.");
+  }
+}
+
 function render() {
   $("#bizName").textContent = (cfg && cfg.nome) || "";
   if (!cfg) return;
   aplicarPersonalizadas(cfg.personalizadas);
   montarFiltroCat();
-  renderHoje();
-  renderProj();
-  renderAvisos();
-  renderContatos();
-  renderLanc();
-  renderRes();
-  renderMetas();
-  renderRelatorios();
-  renderPersonalizadas();
-  renderCfg();
+  desenharTela(renderHoje);
+  desenharTela(renderProj);
+  desenharTela(renderAvisos);
+  desenharTela(renderContatos);
+  desenharTela(renderLanc);
+  desenharTela(renderRes);
+  desenharTela(renderMetas);
+  desenharTela(renderRelatorios);
+  desenharTela(renderPersonalizadas);
+  desenharTela(renderCfg);
   // na primeira vez conta do zero; depois, só o que mudou
   animar(painelAtivo(), !render.jaAnimou);
   render.jaAnimou = true;

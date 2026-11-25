@@ -10,7 +10,6 @@ a.btn{color:inherit;text-decoration:none;display:inline-block}
 .meta-tr{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden}
 .meta-tr span{display:block;height:100%;border-radius:6px}
 .modal > .row{flex-wrap:wrap}
-#tbAno td{white-space:nowrap}
 @media (max-width:900px){
   .tabs{overflow-x:auto;scrollbar-width:none}
   .tab{flex:1 0 62px}
@@ -23,6 +22,5 @@ a.btn{color:inherit;text-decoration:none;display:inline-block}
   .card,.tile{box-shadow:none;break-inside:avoid}
   .tbl-wrap{overflow:visible}
   table{font-size:.72rem}
-  #tbAno td,#tbAno th{padding:5px 4px}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }

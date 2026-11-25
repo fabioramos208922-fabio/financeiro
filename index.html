@@ -8,11 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/base.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/componentes.css">
-<link rel="stylesheet" href="css/futurista.css">
-<link rel="stylesheet" href="css/completo.css">
+<link rel="stylesheet" href="css/base.css?v=e11c7409">
+<link rel="stylesheet" href="css/layout.css?v=ac09f83c">
+<link rel="stylesheet" href="css/componentes.css?v=c08eff15">
+<link rel="stylesheet" href="css/futurista.css?v=ea021b86">
+<link rel="stylesheet" href="css/completo.css?v=a53864d8">
+<link rel="stylesheet" href="css/relatorios.css?v=9fb119b1">
 </head>
 <body>
 <header class="top">
@@ -174,16 +175,25 @@
 
   <!-- RELATÓRIOS -->
   <section class="panel" id="p-relatorios" role="tabpanel" aria-labelledby="t-relatorios">
-    <div class="card-h" style="margin:0"><h2 id="relTitulo">Relatório do ano</h2><span class="sp"></span>
-      <div class="row nao-imprime"><select id="relAno" aria-label="Ano"></select><button class="btn" id="btnCSVAno">Baixar planilha</button><button class="btn pri" id="btnImprimir">Imprimir ou PDF</button></div></div>
-    <div class="tiles" id="tilesRel"></div>
-    <div class="card"><div class="card-h"><h3>Entradas e saídas por mês</h3><span class="sp"></span><div class="legend"><span><i style="border-color:var(--in-fill);border-top-width:8px"></i>entradas</span><span><i style="border-color:var(--out-fill);border-top-width:8px"></i>saídas</span></div></div><div class="chart-box" id="chartAno"></div></div>
-    <div class="card"><div class="card-h"><h3>Resultado mês a mês</h3></div><div class="tbl-wrap"><table id="tbAno"></table></div></div>
-    <div class="grid2 eq">
-      <div class="card"><div class="card-h"><h3>Quem mais comprou</h3></div><div class="bars" id="topClientes"></div></div>
-      <div class="card"><div class="card-h"><h3>Para quem mais pagou</h3></div><div class="bars" id="topFornec"></div></div>
+    <div class="card rel-faixa" id="relFaixa"></div>
+    <div class="card rel-vazio" id="relVazio" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 17v-3M12 17v-6M15 17v-4"/></svg>
+      <h3>Ainda não há movimento neste ano</h3>
+      <p class="muted">Assim que você lançar ou importar um extrato, o gráfico, a tabela mês a mês e a planilha aparecem aqui.</p>
+      <div class="row"><button class="btn pri" id="relLancar">+ Lançar</button><button class="btn" data-goto="extrato">Importar extrato</button><button class="btn ghost" id="relDemo">Ver com dados de exemplo</button></div>
     </div>
-    <p class="small muted" style="margin:0">Só conta o que já aconteceu. O resultado já desconta as retiradas do dono.</p>
+    <div class="rel-corpo" id="relCorpo" hidden>
+      <div class="rel-2">
+        <div class="card"><div class="card-h"><h3>Mês a mês</h3><span class="sp"></span><div class="legend"><span><i style="border-color:var(--in-fill);border-top-width:8px"></i>entradas</span><span><i style="border-color:var(--out-fill);border-top-width:8px"></i>saídas</span><span><i style="border-color:#0a34bf"></i>resultado</span></div></div><div class="chart-box" id="chartAno"></div></div>
+        <div class="card"><div class="card-h"><h3>De cada R$ 100 que entraram</h3></div><div id="rel100"></div></div>
+      </div>
+      <div class="card rel-tab"><div class="card-h"><h3>Resultado detalhado</h3></div><div class="tbl-wrap"><table id="tbAno"></table></div></div>
+      <div class="grid2 eq">
+        <div class="card"><div class="card-h"><h3>Clientes que mais compraram</h3></div><div id="topClientes"></div></div>
+        <div class="card"><div class="card-h"><h3>Fornecedores que mais receberam</h3></div><div id="topFornec"></div></div>
+      </div>
+      <p class="small muted" style="margin:0">Só conta o que já aconteceu. O resultado já desconta as retiradas do dono.</p>
+    </div>
   </section>
 
   <!-- CONFIG -->
@@ -319,30 +329,31 @@
 <div class="toast" id="toast" role="status"></div>
 
 <!-- A ordem importa: regras de negócio, depois estado, telas e por fim a inicialização. -->
-<script src="js/dominio/constantes.js"></script>
-<script src="js/dominio/datas.js"></script>
-<script src="js/dominio/valores.js"></script>
-<script src="js/dominio/calculos.js"></script>
-<script src="js/dominio/leitura-extrato.js"></script>
-<script src="js/dominio/classificacao.js"></script>
-<script src="js/dominio/demo.js"></script>
-<script src="js/dominio/personalizadas.js"></script>
-<script src="js/dominio/gestao.js"></script>
-<script src="js/util.js"></script>
-<script src="js/estado.js"></script>
-<script src="js/animacao.js"></script>
-<script src="js/componentes.js"></script>
-<script src="js/graficos.js"></script>
-<script src="js/telas/hoje.js"></script>
-<script src="js/telas/projecao.js"></script>
-<script src="js/telas/personalizadas.js"></script>
-<script src="js/telas/lancamentos.js"></script>
-<script src="js/telas/resultado.js"></script>
-<script src="js/telas/configuracoes.js"></script>
-<script src="js/telas/extrato.js"></script>
-<script src="js/telas/contatos.js"></script>
-<script src="js/telas/metas.js"></script>
-<script src="js/telas/relatorios.js"></script>
-<script src="js/app.js"></script>
+<script src="js/dominio/constantes.js?v=d47619ee"></script>
+<script src="js/dominio/datas.js?v=0c784b01"></script>
+<script src="js/dominio/valores.js?v=55a5ddc0"></script>
+<script src="js/dominio/calculos.js?v=c19f8b44"></script>
+<script src="js/dominio/leitura-extrato.js?v=fa12d297"></script>
+<script src="js/dominio/classificacao.js?v=e6c52f5c"></script>
+<script src="js/dominio/demo.js?v=6d301012"></script>
+<script src="js/dominio/personalizadas.js?v=85d6dafd"></script>
+<script src="js/dominio/gestao.js?v=5d59e381"></script>
+<script src="js/dominio/planilha.js?v=84fd7299"></script>
+<script src="js/util.js?v=2afab847"></script>
+<script src="js/estado.js?v=ce4e3e41"></script>
+<script src="js/animacao.js?v=f77a4f3a"></script>
+<script src="js/componentes.js?v=b9fb195b"></script>
+<script src="js/graficos.js?v=76b4d0d4"></script>
+<script src="js/telas/hoje.js?v=56ad59e9"></script>
+<script src="js/telas/projecao.js?v=68aca310"></script>
+<script src="js/telas/personalizadas.js?v=eaab8d70"></script>
+<script src="js/telas/lancamentos.js?v=5c4406a5"></script>
+<script src="js/telas/resultado.js?v=0435c69b"></script>
+<script src="js/telas/configuracoes.js?v=4ed8e556"></script>
+<script src="js/telas/extrato.js?v=4e79a566"></script>
+<script src="js/telas/contatos.js?v=f2c53be4"></script>
+<script src="js/telas/metas.js?v=d69e51af"></script>
+<script src="js/telas/relatorios.js?v=7af63612"></script>
+<script src="js/app.js?v=013f97b2"></script>
 </body>
 </html>

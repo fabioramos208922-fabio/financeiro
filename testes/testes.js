@@ -1,10 +1,10 @@
 /* Testes das regras de negócio. Rodar com: node testes/testes.js */
 const fs = require("fs"), path = require("path"), vm = require("vm"), test = require("node:test"), assert = require("node:assert");
 const pasta = path.join(__dirname, "..", "js", "dominio");
-const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "personalizadas", "gestao"]
+const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "personalizadas", "gestao", "planilha"]
   .map(n => fs.readFileSync(path.join(pasta, n + ".js"), "utf8")).join("\n");
 const d = vm.runInThisContext(`(function(){${codigo}
-return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo,FORMAS,CATS,aplicarPersonalizadas};})()`);
+return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo,planilhaAno,crc32,dataExcel,colunaExcel,FORMAS,CATS,aplicarPersonalizadas};})()`);
 const eq = assert.deepStrictEqual;
 
 test("valores brasileiros", () => {
@@ -131,4 +131,20 @@ test("formas e categorias escritas", () => {
   eq(d.resumoAno(it, "2026").total.fixas, 10);
   const b = d.lerBackup(JSON.stringify({ app: "caixacerto", cfg: { saldoData: "2026-01-01", personalizadas: p }, months: { a: it } }));
   eq([b.months["2026-01"][0].cat, b.cfg.personalizadas.length], ["p_b2", 2]);
+});
+
+test("planilha Excel: ZIP íntegro, textos escapados e fórmulas", () => {
+  eq(d.crc32(new TextEncoder().encode("123456789")), 0xcbf43926);
+  eq([d.dataExcel("2026-01-01"), d.colunaExcel(0), d.colunaExcel(27)], [46023, "A", "AB"]);
+  const mes = { nome: "Janeiro", entradas: 10, variaveis: 2, margem: 8, fixas: 3, retirada: 1, resultado: 4 };
+  const z = Buffer.from(d.planilhaAno({ nome: "A & <B>", ano: "2026", meses: [mes], porCategoria: [], lancamentos: [["2026-01-05", "=1+1", "", "Entrada", "Pix", "Feito", 10]] }));
+  const t = z.toString("utf8");
+  eq(z.readUInt32LE(0), 0x04034b50);
+  eq(z.readUInt16LE(z.length - 12), 8);
+  assert(t.includes("A &amp; &lt;B&gt; · 2026") && t.includes("<f>D5-E5-F5</f><v>4</v>"));
+  assert(t.includes('t="inlineStr"><is><t xml:space="preserve">=1+1'), "texto nunca vira fórmula");
+});
+test("index.html está com as versões dos arquivos em dia", () => {
+  const { versionar, pagina } = require("./versionar.js"), html = fs.readFileSync(pagina, "utf8");
+  eq(versionar(html), html, "rode: node testes/versionar.js");
 });
