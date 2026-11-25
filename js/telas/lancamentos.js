@@ -36,7 +36,12 @@ function renderLanc() {
 }
 
 const opcoesFiltro = (pre, o) => Object.entries(o).map(([k, v]) => `<option value="${pre}-${k}">${v}</option>`).join("");
-$("#flCat").innerHTML = `<option value="">Todas</option><optgroup label="Entradas">${opcoesFiltro("e", FORMAS)}</optgroup><optgroup label="Saídas">${opcoesFiltro("s", CATS)}</optgroup>`;
+function montarFiltroCat() {
+  const atual = $("#flCat").value;
+  $("#flCat").innerHTML = `<option value="">Todas</option><optgroup label="Entradas">${opcoesFiltro("e", FORMAS)}</optgroup><optgroup label="Saídas">${opcoesFiltro("s", CATS)}</optgroup>`;
+  $("#flCat").value = atual;
+  if ($("#flCat").selectedIndex < 0) $("#flCat").value = "";
+}
 ["#flMes", "#flTipo", "#flStatus", "#flCat"].forEach(s => $(s).addEventListener("change", renderLanc));
 $("#flBusca").addEventListener("input", renderLanc);
 
@@ -45,7 +50,7 @@ let edit = null, mTipo = "entrada", mStatus = "realizado";
 
 function atualizarForm() {
   const sel = $("#lnClass"), opcoes = mTipo === "entrada" ? FORMAS : CATS, atual = sel.value;
-  sel.innerHTML = Object.entries(opcoes).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  sel.innerHTML = Object.entries(opcoes).map(([k, v]) => `<option value="${k}">${v}</option>`).join("") + opcaoEscrever;
   if (opcoes[atual]) sel.value = atual;
   $("#lnClassLb").textContent = mTipo === "entrada" ? "Forma de recebimento" : "Categoria da despesa";
   $$("#segTipo button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === mTipo));
@@ -131,7 +136,20 @@ $("#segStatus").addEventListener("click", e => {
   const b = e.target.closest("button");
   if (b) { mStatus = b.dataset.s; atualizarForm(); }
 });
-$("#lnClass").addEventListener("change", atualizarDica);
+let classAnterior = "";
+$("#lnClass").addEventListener("focus", () => { classAnterior = $("#lnClass").value; });
+$("#lnClass").addEventListener("change", () => {
+  const sel = $("#lnClass");
+  if (sel.value === ESCREVER) {
+    // se desistir, continua a opção que estava
+    sel.value = classAnterior;
+    if (sel.selectedIndex < 0) sel.selectedIndex = 0;
+    escreverOutra(mTipo, k => { atualizarForm(); sel.value = k; classAnterior = k; atualizarDica(); });
+    return;
+  }
+  classAnterior = sel.value;
+  atualizarDica();
+});
 $("#lnCancelar").onclick = () => fecharModal("#mdLanc");
 $("#fmLanc").addEventListener("submit", salvarLanc);
 $("#btnNovo").onclick = () => { if (cfg) abrirLanc(null); else toast("Carregando…"); };

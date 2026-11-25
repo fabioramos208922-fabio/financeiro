@@ -81,7 +81,7 @@ function renderImp() {
       <td><input type="checkbox" data-inc="${i}" ${r.incluir ? "checked" : ""} ${r.dup ? "disabled" : ""} aria-label="Incluir"></td>
       <td class="num">${dBRy(r.data)}</td><td class="small">${esc(r.desc)}</td>
       <td class="r num ${classeValor(r.valor > 0)}" style="font-weight:600;white-space:nowrap">${fmtSinal(r.valor)}</td>
-      <td><select data-cls="${i}" aria-label="Forma ou categoria" ${r.prev || r.dup ? "disabled" : ""}><option value="">— escolha —</option>${opcoes}</select></td>
+      <td><select data-cls="${i}" aria-label="Forma ou categoria" ${r.prev || r.dup ? "disabled" : ""}><option value="">— escolha —</option>${opcoes}${opcaoEscrever}</select></td>
       <td>${etiquetaOrigem(r)}</td></tr>`;
   }).join("");
 }
@@ -91,6 +91,11 @@ $("#tbImp").addEventListener("change", e => {
   if (inc !== undefined) imp[inc].incluir = e.target.checked;
   if (cls !== undefined) {
     const r = imp[cls];
+    if (e.target.value === ESCREVER) {
+      renderImp(); // volta ao que estava, caso desista
+      escreverOutra(r.tipo, k => { r.v = k; r.origemCls = "voce"; r.revisar = false; renderImp(); });
+      return;
+    }
     r.v = e.target.value || null;
     r.origemCls = r.v ? "voce" : "?";
     r.revisar = false;

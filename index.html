@@ -204,6 +204,10 @@
       <div id="regras"></div>
     </div>
     <div class="card">
+      <div class="card-h"><h2>Formas e categorias que você escreveu</h2></div>
+      <div id="persLista"></div>
+    </div>
+    <div class="card">
       <div class="card-h"><h2>Dados</h2></div>
       <div class="row"><button class="btn pri" id="btnBackup">Fazer backup</button><button class="btn" id="btnRestaurar">Restaurar backup</button><input type="file" id="bkFile" accept=".json,application/json" hidden><button class="btn" id="btnBaixarCSV">Baixar lançamentos (planilha)</button><button class="btn" id="btnCopiarCSV">Copiar lançamentos (CSV)</button><button class="btn" id="btnVerDemo">Ver demonstração</button><button class="btn danger" id="btnApagar">Apagar todos os meus dados</button></div>
       <p class="small muted" id="bkNota" style="margin:12px 0 0"></p>
@@ -293,6 +297,16 @@
   </form>
 </div>
 
+<!-- MODAL ESCREVER OUTRA -->
+<div class="modal-bg" id="mdOutra" role="dialog" aria-modal="true" aria-labelledby="ouTitulo">
+  <form class="modal" id="fmOutra">
+    <h2 id="ouTitulo"></h2>
+    <div class="f"><label for="ouNome">Nome</label><input type="text" id="ouNome" maxlength="40" autocomplete="off"></div>
+    <p class="small muted" id="ouNota" style="margin:0">No relatório, conta como custo fixo.</p>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="ouCancelar">Cancelar</button><button type="submit" class="btn pri">Usar</button></div>
+  </form>
+</div>
+
 <!-- MODAL CONFIRMAR -->
 <div class="modal-bg" id="mdConf" role="dialog" aria-modal="true" aria-labelledby="cfTitulo">
   <div class="modal">
@@ -312,6 +326,7 @@
 <script src="js/dominio/leitura-extrato.js"></script>
 <script src="js/dominio/classificacao.js"></script>
 <script src="js/dominio/demo.js"></script>
+<script src="js/dominio/personalizadas.js"></script>
 <script src="js/dominio/gestao.js"></script>
 <script src="js/util.js"></script>
 <script src="js/estado.js"></script>
@@ -320,6 +335,7 @@
 <script src="js/graficos.js"></script>
 <script src="js/telas/hoje.js"></script>
 <script src="js/telas/projecao.js"></script>
+<script src="js/telas/personalizadas.js"></script>
 <script src="js/telas/lancamentos.js"></script>
 <script src="js/telas/resultado.js"></script>
 <script src="js/telas/configuracoes.js"></script>

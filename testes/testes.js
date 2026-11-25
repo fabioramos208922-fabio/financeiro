@@ -1,10 +1,10 @@
 /* Testes das regras de negócio. Rodar com: node testes/testes.js */
 const fs = require("fs"), path = require("path"), vm = require("vm"), test = require("node:test"), assert = require("node:assert");
 const pasta = path.join(__dirname, "..", "js", "dominio");
-const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "gestao"]
+const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "personalizadas", "gestao"]
   .map(n => fs.readFileSync(path.join(pasta, n + ".js"), "utf8")).join("\n");
 const d = vm.runInThisContext(`(function(){${codigo}
-return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo};})()`);
+return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo,FORMAS,CATS,aplicarPersonalizadas};})()`);
 const eq = assert.deepStrictEqual;
 
 test("valores brasileiros", () => {
@@ -120,3 +120,15 @@ test("backup: ida e volta, e recusa de arquivo ruim", () => {
   assert.throws(() => d.lerBackup("{}"));
 });
 test("CSV escapa texto", () => eq(d.montarCSV([["a;b", 1.5, 'c"d']]), '"a;b";1,50;"c""d"'));
+
+test("formas e categorias escritas", () => {
+  const p = [{ id: "p_a1", tipo: "entrada", nome: "Vale <b>" }, { id: "p_b2", tipo: "saida", nome: "Marketing" }, { id: "dinheiro", tipo: "entrada", nome: "Troca" }];
+  d.aplicarPersonalizadas(p);
+  eq([d.FORMAS.p_a1, d.CATS.p_b2, d.FORMAS.dinheiro], ["Vale b", "Marketing", "Dinheiro"]);
+  d.aplicarPersonalizadas([]);
+  eq([d.FORMAS.p_a1, d.CATS.p_b2], [undefined, undefined]);
+  const it = [{ id: "1", tipo: "saida", status: "realizado", data: "2026-01-05", valor: 10, cat: "p_b2" }];
+  eq(d.resumoAno(it, "2026").total.fixas, 10);
+  const b = d.lerBackup(JSON.stringify({ app: "caixacerto", cfg: { saldoData: "2026-01-01", personalizadas: p }, months: { a: it } }));
+  eq([b.months["2026-01"][0].cat, b.cfg.personalizadas.length], ["p_b2", 2]);
+});

@@ -77,8 +77,8 @@ function andamentoMetas(itens, metas, hoje) {
   };
 }
 
-const CUSTO_FIXO = ["fixa", "manutencao", "financeira"];
-function custoFixo(r) { return CUSTO_FIXO.reduce((a, k) => a + (r.porCat[k] || 0), 0); }
+/* Tudo o que não é custo variável nem retirada, inclusive categorias escritas pela pessoa. */
+function custoFixo(r) { return arred(r.saidas - r.custoVar - (r.porCat.retirada || 0)); }
 
 /* Quanto precisa entrar no mês para cobrir os custos fixos (sem a retirada do dono). */
 function pontoEquilibrio(r) {
@@ -130,18 +130,21 @@ function lerBackup(texto) {
   if (!ehObjeto(b) || b.app !== "caixacerto" || !ehObjeto(b.cfg) || !ehObjeto(b.months)) throw new Error("Esse arquivo não é um backup do Caixa Certo.");
   if (!dataValida(b.cfg.saldoData)) throw new Error("O backup está sem a data do saldo inicial.");
 
+  const personalizadas = lerPersonalizadas(b.cfg.personalizadas);
+  const formas = comPersonalizadas(FORMAS, "entrada", personalizadas), cats = comPersonalizadas(CATS, "saida", personalizadas);
   const lista = x => (Array.isArray(x) ? x.filter(ehObjeto) : []);
   const numero = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
   const m = ehObjeto(b.cfg.metas) ? b.cfg.metas : {}, orcamento = {};
-  for (const k of Object.keys(CATS)) if (ehObjeto(m.orcamento) && numero(m.orcamento[k]) > 0) orcamento[k] = numero(m.orcamento[k]);
+  for (const k of Object.keys(cats)) if (ehObjeto(m.orcamento) && numero(m.orcamento[k]) > 0) orcamento[k] = numero(m.orcamento[k]);
   const cfg = {
     nome: String(b.cfg.nome || "Meu negócio"),
     saldoInicial: numero(b.cfg.saldoInicial),
     saldoData: b.cfg.saldoData,
     projVendas: b.cfg.projVendas !== false,
     regras: lista(b.cfg.regras)
-      .filter(r => typeof r.k === "string" && (r.tipo === "entrada" ? daLista(FORMAS, r.v) : r.tipo === "saida" && daLista(CATS, r.v)))
+      .filter(r => typeof r.k === "string" && (r.tipo === "entrada" ? daLista(formas, r.v) : r.tipo === "saida" && daLista(cats, r.v)))
       .map(r => ({ k: r.k, tipo: r.tipo, v: r.v })),
+    personalizadas,
     contatos: lista(b.cfg.contatos).filter(c => c.id && c.nome).map(c => ({
       id: String(c.id), nome: String(c.nome), tipo: c.tipo === "fornecedor" ? "fornecedor" : "cliente",
       tel: String(c.tel || ""), obs: String(c.obs || ""),
@@ -159,8 +162,8 @@ function lerBackup(texto) {
       if (!ok) { ignorados++; continue; }
       const n = { id: String(l.id), tipo: l.tipo, status: l.status, data: l.data, valor: l.valor, desc: String(l.desc || ""), origem: l.origem === "extrato" ? "extrato" : "manual", criado: numero(l.criado) };
       for (const k of ["fitid", "extratoDesc", "contatoId", "grupo", "parcela"]) if (l[k]) n[k] = String(l[k]);
-      if (l.tipo === "entrada") n.forma = daLista(FORMAS, l.forma) ? l.forma : "outra";
-      else n.cat = daLista(CATS, l.cat) ? l.cat : "variavel";
+      if (l.tipo === "entrada") n.forma = daLista(formas, l.forma) ? l.forma : "outra";
+      else n.cat = daLista(cats, l.cat) ? l.cat : "variavel";
       ids.add(n.id);
       (months[monthKey(n.data)] = months[monthKey(n.data)] || []).push(n);
       total++;

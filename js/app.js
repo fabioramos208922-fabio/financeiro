@@ -2,6 +2,8 @@
 function render() {
   $("#bizName").textContent = (cfg && cfg.nome) || "";
   if (!cfg) return;
+  aplicarPersonalizadas(cfg.personalizadas);
+  montarFiltroCat();
   renderHoje();
   renderProj();
   renderAvisos();
@@ -10,6 +12,7 @@ function render() {
   renderRes();
   renderMetas();
   renderRelatorios();
+  renderPersonalizadas();
   renderCfg();
   // na primeira vez conta do zero; depois, só o que mudou
   animar(painelAtivo(), !render.jaAnimou);
