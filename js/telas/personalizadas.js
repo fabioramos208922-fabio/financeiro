@@ -1,42 +1,48 @@
-/* Opção "Escrever outra…" nas listas de forma e categoria. */
-const ESCREVER = "__escrever";
-const opcaoEscrever = `<option value="${ESCREVER}">✎ Escrever outra…</option>`;
-let aoEscrever = null, tipoEscrever = "entrada";
+/* Campo de forma ou categoria: a pessoa escreve um nome ou escolhe da lista. */
+const opcoesDe = tipo => (tipo === "entrada" ? FORMAS : CATS);
+const listaDe = tipo => (tipo === "entrada" ? "dlFormas" : "dlCats");
 
-/* cb recebe a chave da forma ou categoria escolhida. */
-function escreverOutra(tipo, cb) {
-  aoEscrever = cb;
-  tipoEscrever = tipo;
-  $("#ouTitulo").textContent = tipo === "entrada" ? "Outra forma de recebimento" : "Outra categoria de despesa";
-  $("#ouNome").placeholder = tipo === "entrada" ? "Ex.: Vale-refeição, iFood" : "Ex.: Marketing, Uniformes";
-  $("#ouNota").hidden = tipo === "entrada";
-  $("#ouNome").value = "";
-  abrirModal("#mdOutra", "#ouNome");
+function montarListas() {
+  for (const tipo of ["entrada", "saida"]) {
+    $("#" + listaDe(tipo)).innerHTML = Object.values(opcoesDe(tipo)).map(v => `<option value="${esc(v)}"></option>`).join("");
+  }
 }
 
-$("#ouCancelar").onclick = () => fecharModal("#mdOutra");
-$("#fmOutra").addEventListener("submit", e => {
-  e.preventDefault();
-  const nome = nomeLimpo($("#ouNome").value), opcoes = tipoEscrever === "entrada" ? FORMAS : CATS;
-  if (!nome) { toast("Escreva um nome"); return; }
-  // se já existe com esse nome, usa a existente
-  let [k] = Object.entries(opcoes).find(([, v]) => norm(v) === norm(nome)) || [];
-  if (!k) {
-    k = PREFIXO_PERS + uid();
-    cfg.personalizadas = [...(cfg.personalizadas || []), { id: k, tipo: tipoEscrever, nome }];
-    persist("cfg");
-    aplicarPersonalizadas(cfg.personalizadas);
-  }
-  fecharModal("#mdOutra");
-  if (aoEscrever) aoEscrever(k);
-  renderPersonalizadas();
+/* Chave da opção com esse nome; se não existir, cria. Devolve null se estiver vazio. */
+function chavePorNome(tipo, texto) {
+  const nome = nomeLimpo(texto);
+  if (!nome) return null;
+  const achada = Object.entries(opcoesDe(tipo)).find(([, v]) => norm(v) === norm(nome));
+  if (achada) return achada[0];
+  const k = PREFIXO_PERS + uid();
+  cfg.personalizadas = [...(cfg.personalizadas || []), { id: k, tipo, nome }];
+  persist("cfg");
+  aplicarPersonalizadas(cfg.personalizadas);
   montarFiltroCat();
+  renderPersonalizadas();
+  toast(tipo === "entrada" ? `"${nome}" entrou na lista de formas` : `"${nome}" entrou na lista. No relatório, conta como custo fixo`);
+  return k;
+}
+
+/* Ao entrar, esvazia para a lista mostrar tudo; se sair sem escrever, volta o que estava. */
+document.addEventListener("focusin", e => {
+  const c = e.target;
+  if (!c.matches("[data-combo]")) return;
+  c.dataset.antes = c.value;
+  if (c.value) c.placeholder = c.value;
+  c.value = "";
+});
+document.addEventListener("focusout", e => {
+  const c = e.target;
+  if (!c.matches("[data-combo]")) return;
+  if (!c.value.trim()) c.value = c.dataset.antes || "";
+  c.placeholder = "Escreva ou escolha";
 });
 
 function renderPersonalizadas() {
   const lista = lerPersonalizadas(cfg.personalizadas);
   $("#persLista").innerHTML = lista.map(p => `<div class="rule-row"><b>${esc(p.nome)}</b><span class="chip">${p.tipo === "entrada" ? "Entrada" : "Saída"}</span><button class="btn sm ghost danger" data-delpers="${p.id}">Remover</button></div>`).join("")
-    || vazio('Nenhuma ainda. Escolha "Escrever outra…" na lista de formas ou categorias.');
+    || vazio('Nenhuma ainda. Escreva um nome novo no campo de forma ou categoria de um lançamento.');
 }
 
 $("#persLista").addEventListener("click", e => {

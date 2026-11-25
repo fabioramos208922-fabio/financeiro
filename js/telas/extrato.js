@@ -57,11 +57,11 @@ function etiquetaOrigem(r) {
     ia: ["warn", "IA, confira"],
     auto: r.revisar ? ["warn", "confira"] : ["acc", "automático"],
     voce: ["acc", "você"],
-  }[r.origemCls] || ["out", "escolha"];
+  }[r.origemCls] || ["out", "preencha"];
   return `<span class="chip ${cls}">${txt}</span>`;
 }
 
-function renderImp() {
+function renderImpTopo() {
   const novos = imp.filter(r => r.incluir), pend = imp.filter(semClasse).length;
   const dups = imp.filter(r => r.dup).length, baixas = novos.filter(r => r.prev).length;
   $("#impTitulo").textContent = `${imp.length} movimentações no arquivo`;
@@ -69,41 +69,44 @@ function renderImp() {
     `${novos.length} para importar`,
     baixas ? `${baixas} vão dar baixa em contas previstas` : "",
     dups ? `${dups} já tinham sido importadas (ignoradas)` : "",
-    pend ? `${pend} sem categoria: escolha na lista${sample ? " ou use a IA" : ""}` : "tudo classificado",
+    pend ? `${pend} sem categoria: escreva ou escolha${sample ? " ou use a IA" : ""}` : "tudo classificado",
   ].filter(Boolean).join(" · ");
   $("#btnImportar").textContent = `Importar ${novos.length}`;
   $("#btnImportar").disabled = !novos.length || pend > 0;
   $("#btnIA").disabled = !pend;
+}
+
+function renderImp() {
+  renderImpTopo();
   $("#tbImp").innerHTML = imp.map((r, i) => {
-    const opcoes = Object.entries(r.tipo === "entrada" ? FORMAS : CATS)
-      .map(([k, v]) => `<option value="${k}" ${r.v === k ? "selected" : ""}>${v}</option>`).join("");
     return `<tr class="${r.incluir ? "" : "skip"}">
       <td><input type="checkbox" data-inc="${i}" ${r.incluir ? "checked" : ""} ${r.dup ? "disabled" : ""} aria-label="Incluir"></td>
       <td class="num">${dBRy(r.data)}</td><td class="small">${esc(r.desc)}</td>
       <td class="r num ${classeValor(r.valor > 0)}" style="font-weight:600;white-space:nowrap">${fmtSinal(r.valor)}</td>
-      <td><select data-cls="${i}" aria-label="Forma ou categoria" ${r.prev || r.dup ? "disabled" : ""}><option value="">— escolha —</option>${opcoes}${opcaoEscrever}</select></td>
+      <td><input type="text" class="combo" data-combo data-cls="${i}" list="${listaDe(r.tipo)}" maxlength="40" autocomplete="off" placeholder="Escreva ou escolha" aria-label="Forma ou categoria" value="${esc(opcoesDe(r.tipo)[r.v] || "")}" ${r.prev || r.dup ? "disabled" : ""}></td>
       <td>${etiquetaOrigem(r)}</td></tr>`;
   }).join("");
 }
 
 $("#tbImp").addEventListener("change", e => {
   const { inc, cls } = e.target.dataset;
-  if (inc !== undefined) imp[inc].incluir = e.target.checked;
   if (cls !== undefined) {
-    const r = imp[cls];
-    if (e.target.value === ESCREVER) {
-      renderImp(); // volta ao que estava, caso desista
-      escreverOutra(r.tipo, k => { r.v = k; r.origemCls = "voce"; r.revisar = false; renderImp(); });
-      return;
-    }
-    r.v = e.target.value || null;
-    r.origemCls = r.v ? "voce" : "?";
+    const r = imp[cls], k = chavePorNome(r.tipo, e.target.value);
+    if (!k) return;
+    r.v = k;
+    r.origemCls = "voce";
     r.revisar = false;
+    e.target.value = opcoesDe(r.tipo)[k];
+    e.target.dataset.antes = e.target.value;
+    // só o que mudou, para não tirar o foco do próximo campo
+    e.target.closest("tr").lastElementChild.innerHTML = etiquetaOrigem(r);
+    renderImpTopo();
+    return;
   }
+  if (inc === undefined) return;
+  imp[inc].incluir = e.target.checked;
   renderImp();
-  // a tabela foi redesenhada: devolve o foco ao mesmo controle
-  const alvo = $(inc !== undefined ? `[data-inc="${inc}"]` : `[data-cls="${cls}"]`);
-  if (alvo) alvo.focus();
+  $(`[data-inc="${inc}"]`).focus();
 });
 
 /* ---------- classificação por IA ---------- */

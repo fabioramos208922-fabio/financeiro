@@ -37,6 +37,7 @@ function renderLanc() {
 
 const opcoesFiltro = (pre, o) => Object.entries(o).map(([k, v]) => `<option value="${pre}-${k}">${v}</option>`).join("");
 function montarFiltroCat() {
+  montarListas();
   const atual = $("#flCat").value;
   $("#flCat").innerHTML = `<option value="">Todas</option><optgroup label="Entradas">${opcoesFiltro("e", FORMAS)}</optgroup><optgroup label="Saídas">${opcoesFiltro("s", CATS)}</optgroup>`;
   $("#flCat").value = atual;
@@ -50,7 +51,7 @@ let edit = null, mTipo = "entrada", mStatus = "realizado";
 
 function atualizarForm() {
   const sel = $("#lnClass"), opcoes = mTipo === "entrada" ? FORMAS : CATS, atual = sel.value;
-  sel.innerHTML = Object.entries(opcoes).map(([k, v]) => `<option value="${k}">${v}</option>`).join("") + opcaoEscrever;
+  sel.innerHTML = Object.entries(opcoes).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
   if (opcoes[atual]) sel.value = atual;
   $("#lnClassLb").textContent = mTipo === "entrada" ? "Forma de recebimento" : "Categoria da despesa";
   $$("#segTipo button").forEach(b => b.setAttribute("aria-pressed", b.dataset.t === mTipo));
@@ -60,6 +61,9 @@ function atualizarForm() {
 }
 
 function atualizarDica() {
+  const campo = $("#lnClassTxt");
+  campo.setAttribute("list", listaDe(mTipo));
+  campo.value = opcoesDe(mTipo)[$("#lnClass").value] || "";
   const v = $("#lnClass").value;
   let t = "";
   if (mTipo === "entrada" && v === "credito") t = 'Venda no crédito: o dinheiro costuma cair dias depois. Para a projeção ficar certa, lance como "Vai acontecer" na data em que a maquininha repassa.';
@@ -100,6 +104,7 @@ function abrirLanc(l) {
 
 function salvarLanc(e) {
   e.preventDefault();
+  usarTextoClass();
   const valor = arred(Math.abs(parseBR($("#lnValor").value))), data = $("#lnData").value;
   if (!valor) { toast("Digite um valor válido, por exemplo 150,00"); return; }
   if (!data) { toast("Escolha a data"); return; }
@@ -136,20 +141,16 @@ $("#segStatus").addEventListener("click", e => {
   const b = e.target.closest("button");
   if (b) { mStatus = b.dataset.s; atualizarForm(); }
 });
-let classAnterior = "";
-$("#lnClass").addEventListener("focus", () => { classAnterior = $("#lnClass").value; });
-$("#lnClass").addEventListener("change", () => {
+/* O select escondido guarda a chave; a pessoa vê e escreve no campo de texto. */
+function usarTextoClass() {
+  const campo = $("#lnClassTxt"), k = chavePorNome(mTipo, campo.value);
+  if (!k) return;
   const sel = $("#lnClass");
-  if (sel.value === ESCREVER) {
-    // se desistir, continua a opção que estava
-    sel.value = classAnterior;
-    if (sel.selectedIndex < 0) sel.selectedIndex = 0;
-    escreverOutra(mTipo, k => { atualizarForm(); sel.value = k; classAnterior = k; atualizarDica(); });
-    return;
-  }
-  classAnterior = sel.value;
+  if (![...sel.options].some(o => o.value === k)) sel.add(new Option(opcoesDe(mTipo)[k], k));
+  sel.value = k;
   atualizarDica();
-});
+}
+$("#lnClassTxt").addEventListener("change", usarTextoClass);
 $("#lnCancelar").onclick = () => fecharModal("#mdLanc");
 $("#fmLanc").addEventListener("submit", salvarLanc);
 $("#btnNovo").onclick = () => { if (cfg) abrirLanc(null); else toast("Carregando…"); };

@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="css/layout.css?v=ac09f83c">
 <link rel="stylesheet" href="css/componentes.css?v=c08eff15">
 <link rel="stylesheet" href="css/futurista.css?v=ea021b86">
-<link rel="stylesheet" href="css/completo.css?v=a53864d8">
+<link rel="stylesheet" href="css/completo.css?v=37d28028">
 <link rel="stylesheet" href="css/relatorios.css?v=9fb119b1">
 </head>
 <body>
@@ -257,7 +257,7 @@
       <div class="f"><label for="lnData">Data</label><input type="date" id="lnData" required></div>
       <div class="f full"><label for="lnDesc">Descrição</label><input type="text" id="lnDesc" placeholder="Ex.: Venda balcão, conta de luz, fornecedor X"></div>
       <div class="f full"><label for="lnContato">Cliente ou fornecedor (opcional)</label><input type="text" id="lnContato" list="listaContatos" autocomplete="off" placeholder="Escolha ou digite um nome novo"><datalist id="listaContatos"></datalist></div>
-      <div class="f full"><label for="lnClass" id="lnClassLb">Forma de recebimento</label><select id="lnClass"></select></div>
+      <div class="f full"><label for="lnClassTxt" id="lnClassLb">Forma de recebimento</label><input type="text" id="lnClassTxt" data-combo maxlength="40" autocomplete="off" placeholder="Escreva ou escolha"><select id="lnClass" hidden></select></div>
       <div class="f full" id="lnRepWrap"><label for="lnRep">Repetir ou parcelar</label><select id="lnRep"><option value="1">Só uma vez</option><optgroup label="Repetir todo mês, mesmo valor"><option value="m3">Por 3 meses</option><option value="m6">Por 6 meses</option><option value="m12">Por 12 meses</option></optgroup><optgroup label="Repetir toda semana, mesmo valor"><option value="s4">Por 4 semanas</option><option value="s12">Por 12 semanas</option></optgroup><optgroup label="Parcelar: divide o valor total"><option value="p2">Em 2 vezes</option><option value="p3">Em 3 vezes</option><option value="p4">Em 4 vezes</option><option value="p5">Em 5 vezes</option><option value="p6">Em 6 vezes</option><option value="p8">Em 8 vezes</option><option value="p10">Em 10 vezes</option><option value="p12">Em 12 vezes</option></optgroup></select></div>
       <label class="switch full" for="lnTodos" id="lnTodosWrap" hidden><input type="checkbox" id="lnTodos"> <span>Aplicar também aos próximos em aberto desta série (a data de cada um não muda)</span></label>
     </div>
@@ -307,15 +307,7 @@
   </form>
 </div>
 
-<!-- MODAL ESCREVER OUTRA -->
-<div class="modal-bg" id="mdOutra" role="dialog" aria-modal="true" aria-labelledby="ouTitulo">
-  <form class="modal" id="fmOutra">
-    <h2 id="ouTitulo"></h2>
-    <div class="f"><label for="ouNome">Nome</label><input type="text" id="ouNome" maxlength="40" autocomplete="off"></div>
-    <p class="small muted" id="ouNota" style="margin:0">No relatório, conta como custo fixo.</p>
-    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="ouCancelar">Cancelar</button><button type="submit" class="btn pri">Usar</button></div>
-  </form>
-</div>
+<datalist id="dlFormas"></datalist><datalist id="dlCats"></datalist>
 
 <!-- MODAL CONFIRMAR -->
 <div class="modal-bg" id="mdConf" role="dialog" aria-modal="true" aria-labelledby="cfTitulo">
@@ -346,11 +338,11 @@
 <script src="js/graficos.js?v=76b4d0d4"></script>
 <script src="js/telas/hoje.js?v=56ad59e9"></script>
 <script src="js/telas/projecao.js?v=68aca310"></script>
-<script src="js/telas/personalizadas.js?v=eaab8d70"></script>
-<script src="js/telas/lancamentos.js?v=5c4406a5"></script>
+<script src="js/telas/personalizadas.js?v=2f97867c"></script>
+<script src="js/telas/lancamentos.js?v=2e49bbbc"></script>
 <script src="js/telas/resultado.js?v=0435c69b"></script>
 <script src="js/telas/configuracoes.js?v=4ed8e556"></script>
-<script src="js/telas/extrato.js?v=4e79a566"></script>
+<script src="js/telas/extrato.js?v=d7dc5e93"></script>
 <script src="js/telas/contatos.js?v=f2c53be4"></script>
 <script src="js/telas/metas.js?v=d69e51af"></script>
 <script src="js/telas/relatorios.js?v=7af63612"></script>
