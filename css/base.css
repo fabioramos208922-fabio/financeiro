@@ -1,38 +1,28 @@
-/* Variáveis de cor, tema claro/escuro e estilos base. */
+/* Variáveis de cor e estilos base. Tema único, azul e branco. */
 :root{
-  --bg:#eef1f5; --surface:#ffffff; --surface2:#f6f8fb; --ink:#141b27; --muted:#5b6576; --line:#dde2ea;
-  --hdr:#0f1a2b; --hdr-ink:#eef2f8; --hdr-muted:#94a3bb;
-  --accent:#2f55e4; --accent-soft:#e7ecfd;
-  --in:#0f7f58; --in-soft:#dff3ea; --out:#c63d2b; --out-soft:#fbe6e1; --warn:#9a6200; --warn-soft:#fcefd2;
-  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --bg:#e9f0ff; --surface:#ffffff; --surface2:#f1f6ff; --ink:#06194a; --muted:#50648f; --line:#d6e2fa;
+  --hdr:#0a39cf; --hdr-ink:#ffffff; --hdr-muted:#cbdaff;
+  --accent:#1257ff; --accent-ink:#ffffff; --accent-soft:rgba(18,87,255,.1);
+  --in:#007a68; --in-soft:#d9f5ef; --in-fill:#12a594;
+  --out:#cf3222; --out-soft:#ffe6e2; --out-fill:#ee5d4a;
+  --warn:#8f5b00; --warn-soft:#fff0cf;
+  --display:"Oxanium","Segoe UI",system-ui,sans-serif;
   --body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
-  --r:14px; --shadow:0 1px 2px rgba(15,26,43,.05),0 4px 14px rgba(15,26,43,.05);
+  --r:18px; --shadow:0 18px 40px -26px rgba(6,40,140,.45);
   color-scheme:light;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0c111a; --surface:#151c28; --surface2:#1b2332; --ink:#e8ecf3; --muted:#98a3b6; --line:#273041;
-    --hdr:#080c13; --hdr-ink:#eef2f8; --hdr-muted:#8592a8;
-    --accent:#8aa2ff; --accent-soft:#1f2a4d;
-    --in:#4fd19c; --in-soft:#14302a; --out:#ff8b76; --out-soft:#3b1f1b; --warn:#f2b84f; --warn-soft:#382b12;
-    --shadow:none; color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0c111a; --surface:#151c28; --surface2:#1b2332; --ink:#e8ecf3; --muted:#98a3b6; --line:#273041;
-  --hdr:#080c13; --hdr-ink:#eef2f8; --hdr-muted:#8592a8;
-  --accent:#8aa2ff; --accent-soft:#1f2a4d;
-  --in:#4fd19c; --in-soft:#14302a; --out:#ff8b76; --out-soft:#3b1f1b; --warn:#f2b84f; --warn-soft:#382b12;
-  --shadow:none; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.015em}
-h2{font-size:1.3rem;font-weight:700}
-h3{font-size:1.02rem;font-weight:700}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);min-height:100vh}
+/* malha e luz do fundo */
+body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1}
+body::before{background-image:linear-gradient(rgba(18,87,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(18,87,255,.07) 1px,transparent 1px);background-size:56px 56px;-webkit-mask-image:radial-gradient(90% 60% at 60% 0,#000,transparent);mask-image:radial-gradient(90% 60% at 60% 0,#000,transparent)}
+body::after{background:radial-gradient(46% 38% at 78% -4%,rgba(18,87,255,.2),transparent),radial-gradient(40% 40% at 22% 8%,rgba(64,170,255,.2),transparent)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.06rem;font-weight:600}
 .num{font-variant-numeric:tabular-nums}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+::selection{background:var(--accent);color:var(--accent-ink)}
 .pos{color:var(--in)} .neg{color:var(--out)} .muted{color:var(--muted)} .small{font-size:.85rem}
-

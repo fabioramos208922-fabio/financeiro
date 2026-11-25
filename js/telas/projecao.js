@@ -9,7 +9,7 @@ function renderProj() {
   $("#projNota").textContent = vendas
     ? `Inclui vendas médias de ${fmt(vendas.reduce((a, b) => a + b, 0) / 7)} por dia (dinheiro, Pix e débito), calculadas das últimas 4 semanas.`
     : "Só contas lançadas; vendas médias desligadas em Configurações.";
-  desenharSaldo("#chartProj", serie(itens, cfg, HOJE, HOJE, fim, vendas), 1060, 300);
+  desenharSaldo("#chartProj", serie(itens, cfg, HOJE, HOJE, fim, vendas), 320);
 
   const prev = itens.filter(l => l.status === "previsto" && l.data <= fim).sort((x, y) => x.data.localeCompare(y.data));
   const pagar = prev.filter(l => !ehEntrada(l)), receber = prev.filter(ehEntrada);

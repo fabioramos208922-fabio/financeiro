@@ -3,19 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1257ff">
 <title>Caixa Certo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/layout.css">
 <link rel="stylesheet" href="css/componentes.css">
+<link rel="stylesheet" href="css/futurista.css">
 </head>
 <body>
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg></span>
+      <span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1257ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg></span>
       <h1>Caixa Certo</h1>
       <span class="biz" id="bizName"></span>
       <span class="sp"></span>
@@ -23,12 +25,12 @@
       <button class="btn pri" id="btnNovo">+ Lançar</button>
     </div>
     <nav class="tabs" role="tablist" aria-label="Seções">
-      <button class="tab" role="tab" id="t-hoje" aria-controls="p-hoje" data-tab="hoje" aria-selected="true">Hoje</button>
-      <button class="tab" role="tab" id="t-projecao" aria-controls="p-projecao" data-tab="projecao" aria-selected="false">Projeção</button>
-      <button class="tab" role="tab" id="t-lancamentos" aria-controls="p-lancamentos" data-tab="lancamentos" aria-selected="false">Lançamentos</button>
-      <button class="tab" role="tab" id="t-extrato" aria-controls="p-extrato" data-tab="extrato" aria-selected="false">Importar extrato</button>
-      <button class="tab" role="tab" id="t-resultado" aria-controls="p-resultado" data-tab="resultado" aria-selected="false">Resultado do mês</button>
-      <button class="tab" role="tab" id="t-config" aria-controls="p-config" data-tab="config" aria-selected="false">Configurações</button>
+      <button class="tab" role="tab" id="t-hoje" aria-controls="p-hoje" data-tab="hoje" aria-selected="true" aria-label="Hoje"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 7h6V4h-6z"/></svg><span class="longo">Hoje</span><span class="curto">Hoje</span></button>
+      <button class="tab" role="tab" id="t-projecao" aria-controls="p-projecao" data-tab="projecao" aria-selected="false" aria-label="Projeção"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><span class="longo">Projeção</span><span class="curto">Projeção</span></button>
+      <button class="tab" role="tab" id="t-lancamentos" aria-controls="p-lancamentos" data-tab="lancamentos" aria-selected="false" aria-label="Lançamentos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg><span class="longo">Lançamentos</span><span class="curto">Lançam.</span></button>
+      <button class="tab" role="tab" id="t-extrato" aria-controls="p-extrato" data-tab="extrato" aria-selected="false" aria-label="Importar extrato"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M4 16v4h16v-4"/></svg><span class="longo">Importar extrato</span><span class="curto">Extrato</span></button>
+      <button class="tab" role="tab" id="t-resultado" aria-controls="p-resultado" data-tab="resultado" aria-selected="false" aria-label="Resultado do mês"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span class="longo">Resultado do mês</span><span class="curto">Resultado</span></button>
+      <button class="tab" role="tab" id="t-config" aria-controls="p-config" data-tab="config" aria-selected="false" aria-label="Configurações"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="longo">Configurações</span><span class="curto">Ajustes</span></button>
     </nav>
   </div>
 </header>
@@ -39,19 +41,19 @@
 <main>
   <!-- HOJE -->
   <section class="panel on" id="p-hoje" role="tabpanel" aria-labelledby="t-hoje">
-    <div class="card hero" id="hero"></div>
-    <div id="alertHoje"></div>
-    <div class="tiles" id="tilesHoje"></div>
-    <div class="grid2">
-      <div class="card">
+    <div class="card console">
+      <div class="hero" id="hero"></div>
+      <div class="console-grafico">
         <div class="card-h"><h3>Saldo dia a dia neste mês</h3><span class="sp"></span>
           <div class="legend"><span><i></i>realizado</span><span><i class="d"></i>previsto</span></div></div>
         <div class="chart-box" id="chartHoje"></div>
       </div>
-      <div class="card">
-        <div class="card-h"><h3>Próximos 7 dias</h3><span class="sp"></span><button class="btn sm ghost" data-goto="projecao">Ver tudo</button></div>
-        <div class="list" id="proximos"></div>
-      </div>
+    </div>
+    <div id="alertHoje"></div>
+    <div class="tiles" id="tilesHoje"></div>
+    <div class="card">
+      <div class="card-h"><h3>Próximos 7 dias</h3><span class="sp"></span><button class="btn sm ghost" data-goto="projecao">Ver tudo</button></div>
+      <div class="list" id="proximos"></div>
     </div>
   </section>
 
@@ -127,7 +129,7 @@
     <div class="card-h" style="margin:0"><h2>Resultado do mês</h2><span class="sp"></span><div class="f"><label for="resMes">Mês</label><input type="month" id="resMes"></div></div>
     <div class="tiles" id="tilesRes"></div>
     <div class="card">
-      <div class="card-h"><h3>Entradas e saídas por semana</h3><span class="sp"></span><div class="legend"><span><i style="border-color:var(--in);border-top-width:8px"></i>entradas</span><span><i style="border-color:var(--out);border-top-width:8px"></i>saídas</span></div></div>
+      <div class="card-h"><h3>Entradas e saídas por semana</h3><span class="sp"></span><div class="legend"><span><i style="border-color:var(--in-fill);border-top-width:8px"></i>entradas</span><span><i style="border-color:var(--out-fill);border-top-width:8px"></i>saídas</span></div></div>
       <div class="chart-box" id="chartSem"></div>
     </div>
     <div class="grid2 eq">

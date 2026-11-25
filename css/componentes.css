@@ -25,8 +25,6 @@
 .btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;font-size:.92rem}
 .btn:hover{border-color:var(--accent)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-:root[data-theme="dark"] .btn.pri{color:#0b1020}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.pri{color:#0b1020}}
 .btn.sm{padding:4px 10px;font-size:.82rem}
 .btn.ghost{border-color:transparent;background:none}
 .btn.danger{color:var(--out)}

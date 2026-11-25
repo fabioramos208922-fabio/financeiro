@@ -41,7 +41,7 @@ function renderHoje() {
     tile("Entrada média por dia", contar(mediaEntradasDia(itens, HOJE)), "melhor dia: " + melhorDia());
 
   const ini = mk + "-01";
-  desenharSaldo("#chartHoje", serie(itens, cfg, HOJE, ini < cfg.saldoData ? cfg.saldoData : ini, fimMes, med()));
+  desenharSaldo("#chartHoje", serie(itens, cfg, HOJE, ini < cfg.saldoData ? cfg.saldoData : ini, fimMes, med()), 290);
 
   const prox = itens.filter(l => l.status === "previsto" && l.data <= addDays(HOJE, 7)).sort((x, y) => x.data.localeCompare(y.data));
   $("#proximos").innerHTML = prox.map(liPrev).join("")

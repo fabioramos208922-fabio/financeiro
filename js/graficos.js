@@ -15,8 +15,25 @@ function textoSVG(x, y, txt, { anchor = "middle", size = 11, fill = "var(--muted
   return `<text x="${x}" y="${y}" text-anchor="${anchor}" font-size="${size}" font-weight="${peso}" fill="${fill}">${txt}</text>`;
 }
 
+/* Largura real disponível; painéis escondidos usam a do conteúdo. */
+function larguraGrafico(box) {
+  return Math.max(300, Math.min(1300, box.clientWidth || $("main").clientWidth - 104));
+}
+
+/* Inclinações para uma curva suave que não passa do máximo nem do mínimo real. */
+function inclinacoes(pts) {
+  const s = pts.slice(1).map((p, k) => (p.v - pts[k].v) / (p.i - pts[k].i));
+  return pts.map((p, k) => {
+    const a = s[k - 1], b = s[k];
+    if (a === undefined) return b || 0;
+    if (b === undefined) return a;
+    return a * b <= 0 ? 0 : 2 * a * b / (a + b);
+  });
+}
+
 /* ---------- saldo dia a dia ---------- */
-function desenharSaldo(sel, ser, W = 680, H = 250) {
+function desenharSaldo(sel, ser, H = 290) {
+  const W = larguraGrafico($(sel));
   const box = $(sel);
   const idx = ser.map((p, i) => ({ ...p, i })).filter(p => p.v !== null);
   if (idx.length < 2) {
@@ -38,10 +55,10 @@ function desenharSaldo(sel, ser, W = 680, H = 250) {
   let g = "";
   if (lo < 0) g += `<rect x="${L}" y="${y(0)}" width="${W - L - R}" height="${y(lo) - y(0)}" fill="var(--out)" opacity=".07"/>`;
   for (let v = lo; v <= hi + 1e-6; v += step) {
-    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(${v === 0 ? "--muted" : "--line"})"/>`
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="${Math.abs(v) < 1e-6 ? "zero" : "grade"}"/>`
       + textoSVG(L - 8, y(v) + 4, compact(v), { anchor: "end" });
   }
-  const ticks = Math.min(W > 800 ? 11 : 7, n);
+  const ticks = Math.min(Math.max(2, Math.floor(W / 85)), n);
   for (let k = 0; k < ticks; k++) {
     const i = Math.round(k * (n - 1) / (ticks - 1));
     g += textoSVG(x(i), H - 8, dBR(ser[i].d));
@@ -52,14 +69,20 @@ function desenharSaldo(sel, ser, W = 680, H = 250) {
       + textoSVG(x(h), T - 9, "hoje", { anchor: h < 3 ? "start" : h > n - 4 ? "end" : "middle", peso: 700 });
   }
 
-  const path = a => a.map((p, k) => (k ? "L" : "M") + x(p.i).toFixed(1) + " " + y(p.v).toFixed(1)).join(" ");
+  const inc = inclinacoes(idx), mDe = new Map(idx.map((p, k) => [p.i, inc[k]]));
+  const xy = (i, v) => x(i).toFixed(1) + " " + y(v).toFixed(1);
+  const path = a => a.map((p, k) => {
+    if (!k) return "M" + xy(p.i, p.v);
+    const o = a[k - 1], t = (p.i - o.i) / 3;
+    return "C" + [xy(o.i + t, o.v + mDe.get(o.i) * t), xy(p.i - t, p.v - mDe.get(p.i) * t), xy(p.i, p.v)].join(" ");
+  }).join(" ");
   const feito = idx.filter(p => !p.proj);
   // a linha prevista começa no último ponto realizado
   const proj = idx.filter((p, k) => p.proj || (idx[k + 1] && idx[k + 1].proj));
   g += `<g clip-path="url(#${id}-corte)">`;
   if (feito.length > 1) {
     g += `<path d="${path(feito)} L${x(feito[feito.length - 1].i)} ${y(0)} L${x(feito[0].i)} ${y(0)} Z" fill="url(#${id})"/>
-      <path d="${path(feito)}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+      <path class="linha" d="${path(feito)}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   }
   if (proj.length > 1) g += `<path d="${path(proj)}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="6 5" stroke-linejoin="round" opacity=".8"/>`;
   g += '</g><g class="marcos">';
@@ -78,7 +101,7 @@ function desenharSaldo(sel, ser, W = 680, H = 250) {
       + textoSVG(x(min.i), y(min.v) + (cabeEmbaixo ? 18 : -10), fmt(min.v), { anchor, size: 11.5, fill: "var(--out)", peso: 700 });
   }
   g += ponto(ult, cor(ult.v))
-    + textoSVG(x(ult.i) - 8, y(ult.v) - 10, fmt(ult.v), { anchor: "end", size: 12, fill: ult.v < 0 ? "var(--out)" : "var(--ink)", peso: 700 }) + "</g>";
+    + textoSVG(x(ult.i) - 8, y(ult.v) - 10, fmt(ult.v), { anchor: "end", size: 13, fill: ult.v < 0 ? "var(--out)" : "var(--ink)", peso: 700 }) + "</g>";
 
   box.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Saldo dia a dia">
     <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".34"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient><clipPath id="${id}-corte"><rect class="corte" x="${L - 4}" y="0" width="${W - L - R + 8}" height="${H}"/></clipPath></defs>
@@ -101,7 +124,9 @@ function desenharSaldo(sel, ser, W = 680, H = 250) {
       let k = idx.findIndex(p => p.i >= pos);
       if (k < 0) k = idx.length - 1;
       const q = idx[k], p = idx[Math.max(0, k - 1)];
-      const f = q.i === p.i ? 1 : (pos - p.i) / (q.i - p.i), v = p.v + (q.v - p.v) * f;
+      const d = q.i - p.i, f = d ? (pos - p.i) / d : 1, f2 = f * f, f3 = f2 * f;
+      const v = p.v * (2 * f3 - 3 * f2 + 1) + q.v * (3 * f2 - 2 * f3)
+        + d * (mDe.get(p.i) * (f3 - 2 * f2 + f) + mDe.get(q.i) * (f3 - f2));
       corte.setAttribute("width", t === 1 ? W - L - R + 8 : Math.max(0, x(pos) - L + 4));
       guia.setAttribute("transform", `translate(${x(pos)} ${y(v)})`);
       guia.style.display = t === 1 ? "none" : "";
@@ -149,30 +174,29 @@ function chartSemanas(itens, mk) {
     if (l.status !== "realizado" || monthKey(l.data) !== mk) continue;
     sem.find(x => l.data <= x.f)[ehEntrada(l) ? "e" : "s"] += l.valor;
   }
-  const W = 1060, H = 240, L = 58, B = 30, T = 12;
+  const W = larguraGrafico($("#chartSem")), H = 260, L = 58, B = 30, T = 12;
   const max = Math.max(1, ...sem.flatMap(w => [w.e, w.s])), step = niceStep(max / 4), topo = Math.ceil(max / step) * step;
-  const y = v => T + (H - T - B) * (1 - v / topo), gw = (W - L - 10) / sem.length, bw = Math.min(34, gw * 0.32);
+  const y = v => T + (H - T - B) * (1 - v / topo), gw = (W - L - 10) / sem.length, bw = Math.min(24, gw * 0.32);
   let g = "";
   for (let v = 0; v <= topo + 1e-6; v += step) {
-    g += `<line x1="${L}" x2="${W - 10}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>` + textoSVG(L - 8, y(v) + 4, compact(v), { anchor: "end" });
+    g += `<line x1="${L}" x2="${W - 10}" y1="${y(v)}" y2="${y(v)}" class="${v ? "grade" : "zero"}"/>` + textoSVG(L - 8, y(v) + 4, compact(v), { anchor: "end" });
   }
   sem.forEach((w, i) => {
     const cx = L + gw * i + gw / 2, periodo = `${dBR(w.d)}–${dBR(w.f)}`;
-    const barra = (x, v, cor, nome) => `<rect class="coluna" style="animation-delay:${i * 90}ms" x="${x}" y="${y(v)}" width="${bw}" height="${y(0) - y(v)}" rx="6" fill="${cor}"><title>${nome} ${periodo}: ${fmt(v)}</title></rect>`;
-    g += barra(cx - bw - 2, w.e, "var(--in)", "Entradas") + barra(cx + 2, w.s, "var(--out)", "Saídas") + textoSVG(cx, H - 10, periodo);
+    const barra = (x, v, cor, nome) => `<rect class="coluna" style="animation-delay:${i * 90}ms" x="${x}" y="${y(v)}" width="${bw}" height="${y(0) - y(v)}" rx="4" fill="${cor}"><title>${nome} ${periodo}: ${fmt(v)}</title></rect>`;
+    g += barra(cx - bw - 1, w.e, "var(--in-fill)", "Entradas") + barra(cx + 1, w.s, "var(--out-fill)", "Saídas") + textoSVG(cx, H - 10, gw < 85 ? dBR(w.d) : periodo);
   });
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Entradas e saídas por semana">${g}</svg>`;
 }
 
 /* ---------- barras horizontais ---------- */
-function bars(obj, labels, cores) {
+function bars(obj, labels) {
   const ent = Object.entries(obj).sort((a, b) => b[1] - a[1]);
   if (!ent.length) return vazio("Nada lançado ainda.");
   const max = Math.max(1, ent[0][1]), total = ent.reduce((a, e) => a + e[1], 0) || 1;
   return ent.map(([k, v], i) => {
-    const cor = cores[k] || COR_NEUTRA;
-    return `<div class="bar"><span class="nm"><i style="background:${cor}"></i>${esc(labels[k] || k)}</span>
-      <span class="tr"><span class="fl" style="animation-delay:${i * 70}ms;width:${(v / max * 100).toFixed(1)}%;background:${cor}"></span></span>
+    return `<div class="bar"><span class="nm">${esc(labels[k] || k)}</span>
+      <span class="tr"><span class="fl" style="animation-delay:${i * 70}ms;width:${(v / max * 100).toFixed(1)}%"></span></span>
       <span class="vl">${fmt(v)}<small>${Math.round(v / total * 100)}%</small></span></div>`;
   }).join("");
 }

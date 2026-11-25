@@ -1,25 +1,47 @@
-/* Estrutura da página: topo, abas, faixa de demonstração e painéis. */
-/* topo */
-.top{background:var(--hdr);color:var(--hdr-ink);position:sticky;top:0;z-index:5}
-.top-in{max-width:1160px;margin:0 auto;padding:14px 16px 0;display:flex;flex-direction:column;gap:12px}
-.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);display:grid;place-items:center;flex:none}
-.brand h1{font-size:1.3rem;font-weight:800}
-.biz{color:var(--hdr-muted);font-size:.9rem;padding-left:12px;border-left:1px solid #2c3a52}
+/* Estrutura: barra lateral no computador; topo e barra inferior no celular. */
+body{padding-left:240px}
+.top{position:fixed;inset:0 auto 0 0;width:240px;background:linear-gradient(185deg,#1257ff,#0a34bf 55%,#06237f);color:var(--hdr-ink);border-right:0;z-index:5;overflow-y:auto}
+.top-in{min-height:100%;padding:26px 16px 20px;display:flex;flex-direction:column;gap:26px}
+.brand{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center}
+.brand .sp{display:none}
+.logo{width:42px;height:42px;border-radius:13px;background:#fff;display:grid;place-items:center;grid-row:1/3;box-shadow:0 0 28px rgba(255,255,255,.4)}
+.brand h1{font-size:1.25rem;font-weight:800;line-height:1.1}
+.biz{color:var(--hdr-muted);font-size:.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brand #btnNovo{grid-column:1/-1;margin-top:20px;padding:12px;font-size:1rem}
+.status{grid-column:1/-1;order:9;font-size:.76rem;color:var(--hdr-muted);margin-top:8px;line-height:1.35}
 .sp{flex:1}
-.status{font-size:.8rem;color:var(--hdr-muted)}
-.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
-.tab{background:none;border:0;padding:10px 14px 12px;border-bottom:3px solid transparent;color:var(--hdr-muted);cursor:pointer;white-space:nowrap;font-weight:600;font-size:.92rem}
-.tab:hover{color:var(--hdr-ink)}
-.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--accent)}
+.tabs{display:flex;flex-direction:column;gap:4px}
+.tab{position:relative;display:flex;align-items:center;gap:12px;text-align:left;background:none;border:0;padding:11px 14px;border-radius:12px;color:var(--hdr-muted);cursor:pointer;font-weight:600;font-size:.94rem}
+.tab svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab .curto{display:none}
+.tab:hover{color:#fff;background:rgba(255,255,255,.1)}
+.tab[aria-selected="true"]{color:#fff;background:rgba(255,255,255,.18)}
+.tab[aria-selected="true"]::before{content:"";position:absolute;left:-16px;top:10px;bottom:10px;width:3px;border-radius:0 3px 3px 0;background:#fff;box-shadow:0 0 14px #fff}
 
 .demo{background:var(--warn-soft);border-bottom:1px solid var(--line)}
-.demo-in{max-width:1160px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.demo-in{max-width:1240px;margin:0 auto;padding:10px 28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.92rem}
 .demo-in b{color:var(--warn)}
 
-main{max-width:1160px;margin:0 auto;padding:22px 16px 70px}
-.panel{display:none;flex-direction:column;gap:18px}
+main{max-width:1240px;margin:0 auto;padding:28px 28px 70px}
+.panel{display:none;flex-direction:column;gap:20px;min-width:0}
 .panel.on{display:flex}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);min-width:0}
 .card-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 
+@media (max-width:900px){
+  body{padding-left:0;padding-bottom:76px}
+  .top{position:sticky;inset:0 0 auto;width:auto;border-right:0;border-bottom:0;overflow:visible}
+  .top-in{min-height:0;padding:12px 16px;gap:0}
+  .brand{grid-template-columns:auto 1fr auto}
+  .logo{width:38px;height:38px}
+  .brand h1{font-size:1.1rem}
+  .brand #btnNovo{grid-column:3;grid-row:1/3;margin:0;padding:10px 16px;font-size:.92rem}
+  .status{display:none}
+  .tabs{position:fixed;inset:auto 0 0;flex-direction:row;gap:0;background:var(--hdr);border-top:0;padding:6px 4px max(6px,env(safe-area-inset-bottom));z-index:6}
+  .tab{flex:1;flex-direction:column;gap:3px;padding:7px 0;font-size:.66rem;min-width:0;border-radius:10px}
+  .tab .longo{display:none} .tab .curto{display:block}
+  .tab[aria-selected="true"]::before{left:30%;right:30%;top:-7px;bottom:auto;width:auto;height:3px;border-radius:0 0 3px 3px}
+  main{padding:18px 14px 40px}
+  .demo-in{padding:10px 16px}
+  .card{padding:18px 16px}
+}

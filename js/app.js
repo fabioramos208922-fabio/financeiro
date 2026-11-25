@@ -58,6 +58,24 @@ document.addEventListener("click", e => {
   if (delrule) { cfg.regras.splice(Number(delrule), 1); persist("cfg"); render(); }
 });
 
+/* Redesenha os gráficos quando a largura muda. */
+let larguraTela = innerWidth, esperaLargura;
+window.addEventListener("resize", () => {
+  if (innerWidth === larguraTela) return;
+  larguraTela = innerWidth;
+  clearTimeout(esperaLargura);
+  esperaLargura = setTimeout(render, 150);
+});
+
+/* Luz dos cartões acompanha o mouse. */
+document.addEventListener("pointermove", e => {
+  const t = e.target.closest && e.target.closest(".tile");
+  if (!t) return;
+  const r = t.getBoundingClientRect();
+  t.style.setProperty("--mx", e.clientX - r.left + "px");
+  t.style.setProperty("--my", e.clientY - r.top + "px");
+});
+
 /* Virou o dia com a página aberta. */
 document.addEventListener("visibilitychange", () => {
   const agora = isoDate(new Date());

@@ -10,8 +10,8 @@ function renderRes() {
     tile("Saídas", contar(r.saidas), `${delta(r.saidas, ra.saidas, true)} ${txt}${r.prevSaida ? ` · ${fmt(r.prevSaida)} a pagar` : ""}`, "neg") +
     tile(r.resultado >= 0 ? "Lucro" : "Prejuízo", contar(r.resultado), `${mesNome(ant)} inteiro: ${fmt(mesInteiro.resultado)}`, classeValor(r.resultado >= 0)) +
     tile("Margem de contribuição", contar(r.margem), r.entradas ? `${pct}% das entradas` : "");
-  $("#barsSaida").innerHTML = bars(r.porCat, CATS, COR_CAT);
-  $("#barsEntrada").innerHTML = bars(r.porForma, FORMAS, COR_FORMA);
+  $("#barsSaida").innerHTML = bars(r.porCat, CATS);
+  $("#barsEntrada").innerHTML = bars(r.porForma, FORMAS);
   $("#chartSem").innerHTML = chartSemanas(itens, mk);
 }
 $("#resMes").addEventListener("change", () => { renderRes(); animar($("#p-resultado"), true); });
