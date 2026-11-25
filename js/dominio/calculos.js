@@ -62,10 +62,11 @@ function analisa(ser) {
   return { min, primeiroNeg, fim: ser[ser.length - 1] };
 }
 
-function resumoMes(itens, mk) {
+function resumoMes(itens, mk) { return resumoItens(itens.filter(l => monthKey(l.data) === mk)); }
+
+function resumoItens(itens) {
   const r = { entradas: 0, saidas: 0, porForma: {}, porCat: {}, prevEntrada: 0, prevSaida: 0 };
   for (const l of itens) {
-    if (monthKey(l.data) !== mk) continue;
     const entrada = l.tipo === "entrada";
     if (l.status === "previsto") {
       r[entrada ? "prevEntrada" : "prevSaida"] += l.valor;

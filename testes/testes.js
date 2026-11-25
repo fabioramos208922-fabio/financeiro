@@ -4,7 +4,7 @@ const pasta = path.join(__dirname, "..", "js", "dominio");
 const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "personalizadas", "gestao", "planilha"]
   .map(n => fs.readFileSync(path.join(pasta, n + ".js"), "utf8")).join("\n");
 const d = vm.runInThisContext(`(function(){${codigo}
-return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo,planilhaAno,crc32,dataExcel,colunaExcel,FORMAS,CATS,aplicarPersonalizadas};})()`);
+return {resumoItens,parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo,planilhaAno,crc32,dataExcel,colunaExcel,FORMAS,CATS,aplicarPersonalizadas};})()`);
 const eq = assert.deepStrictEqual;
 
 test("valores brasileiros", () => {
@@ -147,4 +147,10 @@ test("planilha Excel: ZIP íntegro, textos escapados e fórmulas", () => {
 test("index.html está com as versões dos arquivos em dia", () => {
   const { versionar, pagina } = require("./versionar.js"), html = fs.readFileSync(pagina, "utf8");
   eq(versionar(html), html, "rode: node testes/versionar.js");
+});
+
+test("resumo do período soma igual ao resumo do ano", () => {
+  const it = d.gerarDemo("2026-11-24").itens, ano = d.resumoAno(it, "2026").total, r = d.resumoItens(it.filter(l => l.data.startsWith("2026")));
+  eq([arred2(r.entradas), arred2(r.saidas), arred2(r.resultado)], [ano.entradas, ano.saidas, ano.resultado]);
+  function arred2(v) { return Math.round(v * 100) / 100; }
 });
