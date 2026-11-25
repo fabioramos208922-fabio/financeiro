@@ -20,17 +20,17 @@ function renderHoje() {
   const { min } = p30.a, vFim = mes.a.fim.v;
   const neg = v => (v < 0 ? "neg" : "");
 
+  const dif = arred(vFim - saldo);
   $("#hero").innerHTML = `
-    <div class="first"><span class="lb">Saldo hoje · ${SEM_L[wd(HOJE)]}, ${dLong(HOJE)}</span>
-      <span class="big num ${neg(saldo)}">${contar(saldo)}</span>
-      <span class="s">Caixa + banco, com tudo o que já foi lançado</span><div style="margin-top:8px">${PILULAS[estado]}</div></div>
-    <div><span class="lb">Previsão para ${dLong(fimMes)}</span>
-      <span class="mid num ${neg(vFim)}">${contar(vFim)}</span>
-      <span class="s">${r.prevSaida ? fmt(r.prevSaida) + " a pagar" : "nada a pagar"} · ${r.prevEntrada ? fmt(r.prevEntrada) + " a receber" : "nada a receber"} no mês</span></div>
-    <div><span class="lb">Menor saldo nos próximos 30 dias</span>
-      <span class="mid num ${neg(min.v)}">${contar(min.v)}</span>
-      <span class="s">em ${SEM_L[wd(min.d)]}, ${dLong(min.d)}</span>
-      <button class="btn sm" data-goto="projecao" style="margin-top:8px;width:max-content">Ver projeção</button></div>`;
+    <div class="saldo"><span class="lb">Saldo hoje</span>
+      <span class="big num ${neg(saldo)} ${fmt(saldo).length > 13 ? "longo" : ""}">${contar(saldo)}</span>
+      <span class="s">${SEM_L[wd(HOJE)]}, ${dLong(HOJE)} · caixa + banco</span>${PILULAS[estado]}</div>
+    <div class="linhas">
+      <div class="linha-info"><span><span class="lb">Previsão para ${dLong(fimMes)}</span><span class="s">${dif ? (dif > 0 ? "▲ " : "▼ ") + fmt(Math.abs(dif)) + (dif > 0 ? " a mais" : " a menos") : "igual a hoje"}</span></span><span class="mid num ${neg(vFim)}">${contar(vFim)}</span></div>
+      <div class="linha-info"><span><span class="lb">Menor saldo em 30 dias</span><span class="s">${min.d === HOJE ? "hoje" : SEM_L[wd(min.d)] + ", " + dLong(min.d)}</span></span><span class="mid num ${neg(min.v)}">${contar(min.v)}</span></div>
+      <div class="linha-info"><span><span class="lb">Contas até o fim do mês</span><span class="s">a pagar · a receber</span></span><span class="num par">${fmt(r.prevSaida)}<br>${fmt(r.prevEntrada)}</span></div>
+    </div>
+    <button class="btn" data-goto="projecao">Ver projeção completa</button>`;
   $("#alertHoje").innerHTML = p30.estado === "bad" ? alertaHTML(itens, em30) : "";
 
   const pct = r.entradas ? Math.round(r.margem / r.entradas * 100) : 0;
@@ -40,8 +40,12 @@ function renderHoje() {
     tile(r.resultado >= 0 ? "Lucro do mês até agora" : "Prejuízo do mês até agora", contar(r.resultado), `margem de contribuição ${pct}%`, classeValor(r.resultado >= 0)) +
     tile("Entrada média por dia", contar(mediaEntradasDia(itens, HOJE)), "melhor dia: " + melhorDia());
 
-  const ini = mk + "-01";
-  desenharSaldo("#chartHoje", serie(itens, cfg, HOJE, ini < cfg.saldoData ? cfg.saldoData : ini, fimMes, med()), 290);
+  const ini = mk + "-01" < cfg.saldoData ? cfg.saldoData : mk + "-01";
+  // com poucos dias no mês, mostra também as próximas duas semanas
+  const curto = addDays(ini, 13) > fimMes, fimGraf = curto ? addDays(HOJE, 14) : fimMes;
+  $("#tituloGrafico").textContent = curto ? "Saldo nos próximos dias" : "Saldo dia a dia neste mês";
+  $("#notaGrafico").textContent = `${dLong(ini)} a ${dLong(fimGraf)}`;
+  desenharSaldo("#chartHoje", serie(itens, cfg, HOJE, ini, fimGraf, med()), 340);
 
   const prox = itens.filter(l => l.status === "previsto" && l.data <= addDays(HOJE, 7)).sort((x, y) => x.data.localeCompare(y.data));
   $("#proximos").innerHTML = prox.map(liPrev).join("")

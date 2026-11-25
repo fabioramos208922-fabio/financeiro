@@ -47,7 +47,8 @@ function desenharSaldo(sel, ser, H = 290) {
   const step = niceStep((hi - lo) / 4);
   lo = Math.floor(lo / step) * step;
   hi = Math.ceil(hi / step) * step;
-  const x = i => L + (W - L - R) * i / (n - 1);
+  const F = 14; // folga entre o eixo e o primeiro dia
+  const x = i => L + F + (W - L - R - F) * i / (n - 1);
   const y = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
   const cor = v => (v < 0 ? "var(--out)" : "var(--accent)");
   const id = "grad-" + sel.slice(1);
@@ -66,7 +67,7 @@ function desenharSaldo(sel, ser, H = 290) {
   const h = ser.findIndex(p => p.d === HOJE);
   if (h >= 0) {
     g += `<line x1="${x(h)}" x2="${x(h)}" y1="${T - 6}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="2 3"/>`
-      + textoSVG(x(h), T - 9, "hoje", { anchor: h < 3 ? "start" : h > n - 4 ? "end" : "middle", peso: 700 });
+      + textoSVG(x(h), T - 9, "hoje", { anchor: h > n - 2 ? "end" : "middle", fill: "var(--accent)", peso: 700 });
   }
 
   const inc = inclinacoes(idx), mDe = new Map(idx.map((p, k) => [p.i, inc[k]]));
@@ -84,6 +85,7 @@ function desenharSaldo(sel, ser, H = 290) {
     g += `<path d="${path(feito)} L${x(feito[feito.length - 1].i)} ${y(0)} L${x(feito[0].i)} ${y(0)} Z" fill="url(#${id})"/>
       <path class="linha" d="${path(feito)}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   }
+  if (proj.length > 1) g += `<path d="${path(proj)} L${x(proj[proj.length - 1].i)} ${y(0)} L${x(proj[0].i)} ${y(0)} Z" fill="url(#${id})" opacity=".45"/>`;
   if (proj.length > 1) g += `<path d="${path(proj)}" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-dasharray="6 5" stroke-linejoin="round" opacity=".8"/>`;
   g += '</g><g class="marcos">';
   const agora = idx.find(p => p.d === HOJE);
@@ -141,7 +143,7 @@ function desenharSaldo(sel, ser, H = 290) {
   const mostrar = ev => {
     const r = svg.getBoundingClientRect(), escala = W / r.width;
     const px = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left) * escala;
-    const i = Math.max(0, Math.min(n - 1, Math.round((px - L) / (W - L - R) * (n - 1))));
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - L - F) / (W - L - R - F) * (n - 1))));
     const p = ser[i];
     if (p.v === null) return;
     linha.setAttribute("x1", x(i));

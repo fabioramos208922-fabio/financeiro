@@ -1,31 +1,33 @@
 /* Acabamento: painel de saldo, cartões, botões e gráficos. Carrega por último. */
-/* painel do saldo: fundo azul, então as cores de dentro são claras */
-.console{--surface:#0b3ccc;--surface2:rgba(255,255,255,.14);--ink:#fff;--muted:#d3e0ff;--line:rgba(255,255,255,.2);--accent:#fff;
-  --in:#a5f7e5;--in-soft:rgba(0,16,84,.5);--out:#ffc4ba;--out-soft:rgba(0,16,84,.5);--warn:#ffe09a;--warn-soft:rgba(0,16,84,.5);color:var(--ink)}
-.console .btn{border-color:rgba(255,255,255,.4)}
+/* painel: cartão de saldo azul + gráfico branco */
+.painel{display:grid;grid-template-columns:372px minmax(0,1fr);gap:20px}
+.hero{--ink:#fff;--muted:#d6e3ff;--line:rgba(255,255,255,.18);--in:#a5f7e5;--out:#ffc4ba;--warn:#ffe09a;
+  --in-soft:rgba(0,16,84,.5);--out-soft:rgba(0,16,84,.5);--warn-soft:rgba(0,16,84,.5);
+  color:var(--ink);display:flex;flex-direction:column;gap:20px;padding:26px;border:0;overflow:hidden;
+  background:radial-gradient(circle at 108% -8%,rgba(255,255,255,.2) 0 90px,transparent 91px),radial-gradient(circle at 108% -8%,rgba(255,255,255,.1) 0 165px,transparent 166px),linear-gradient(155deg,#1a62ff,#0c3fd6 55%,#0a2fae)}
+.hero > div{padding:0;gap:0}
+.hero > div + div{border:0}
+.hero .saldo{display:flex;flex-direction:column;gap:6px;position:relative}
+.hero .saldo .pill{margin-top:10px}
+.hero .lb{font-size:.9rem;color:#fff}
+.hero .big{font-size:3rem;letter-spacing:-.03em;line-height:1.05}
+.hero .big.longo{font-size:2.3rem}
+.hero .linhas{border-radius:14px;background:rgba(0,20,100,.28);padding:2px 16px;margin-top:auto}
+.linha-info{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0}
+.linha-info + .linha-info{border-top:1px solid var(--line)}
+.linha-info > span:first-child{display:flex;flex-direction:column}
+.hero .linha-info .lb{font-size:.86rem}
+.hero .linha-info .s{font-size:.78rem}
+.hero .mid{font-size:1.2rem}
+.hero .par{font-family:var(--display);font-weight:600;text-align:right;white-space:nowrap;font-size:.95rem}
+.hero .btn{background:#fff;border-color:#fff;color:#0a39cf;padding:11px}
+.hero .btn:hover{background:#e3ecff;color:#0a39cf}
+.painel-grafico{display:flex;flex-direction:column}
+.painel-grafico .card-h{margin-bottom:8px;align-items:flex-start}
+.painel-grafico .chart-box{margin:auto 0}
+@media (max-width:1080px){.painel{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.hero{padding:22px 18px}.hero .big{font-size:2.6rem}.hero .big.longo{font-size:2rem}}
 .top .btn.pri,.top .btn.pri:not(.top .btn):hover{background:#fff;border-color:#fff;color:#0a39cf;box-shadow:0 8px 26px -8px rgba(0,10,60,.6)}
-.console{padding:0;overflow:hidden;border-color:transparent;background:radial-gradient(70% 90% at 12% 0,#2f7bff,transparent),linear-gradient(150deg,#1151f5,#0a34bf 60%,#072a9c)}
-.console::before{content:"";position:absolute;inset:0 0 auto;height:1px;background:linear-gradient(90deg,transparent,#fff,transparent)}
-.hero{grid-template-columns:1.5fr 1fr 1fr}
-.hero > div{padding:30px 28px 24px;gap:6px}
-.hero > div + div{padding-top:34px}
-.hero .first{background:none}
-.hero .big{font-size:clamp(2.6rem,5.2vw,4.4rem);letter-spacing:-.03em;line-height:1;text-shadow:0 0 46px rgba(255,255,255,.45)}
-.hero .big.neg{text-shadow:0 0 46px rgba(255,160,145,.5)}
-.hero .mid{font-size:1.75rem}
-.console-grafico{padding:8px 24px 22px;border-top:1px solid var(--line)}
-.console-grafico .card-h{margin:12px 0 6px}
-@media (max-width:820px){
-  .hero{grid-template-columns:1fr 1fr}
-  .hero .first{grid-column:1/-1}
-  .hero > div{padding:20px 16px}
-  .hero > div + div{padding:16px;border-top:1px solid var(--line)}
-  .hero > div:nth-child(2){border-left:0}
-  .hero > div:nth-child(3){border-left:1px solid var(--line)}
-  .hero .mid{font-size:1.2rem}
-  .console-grafico{padding:6px 10px 14px}
-}
-
 /* cartões: luz que acompanha o mouse */
 .tiles{gap:16px}
 .tile{padding:20px;border-radius:var(--r);transition:transform .18s,border-color .18s}
@@ -83,7 +85,6 @@ td.num{font-family:var(--display)}
 .chart .grade{stroke:var(--line);stroke-dasharray:2 5}
 .chart .zero{stroke:#9fb3d9}
 .chart .linha{filter:drop-shadow(0 3px 7px rgba(18,87,255,.35))}
-.console .chart .linha{filter:drop-shadow(0 0 8px rgba(255,255,255,.65))}
 .tip{color:#fff;background:#06194a;border:1px solid #2b4a99;border-radius:12px;padding:9px 13px}
 .tip b{font-size:1.1rem}
 .bar .tr{height:10px}
@@ -92,4 +93,3 @@ td.num{font-family:var(--display)}
 .coluna:hover{filter:brightness(1.2)}
 .marcos text{paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
 
-.console .chart .zero{stroke:rgba(255,255,255,.55)}
