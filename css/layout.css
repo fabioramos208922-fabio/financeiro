@@ -1,0 +1,25 @@
+/* Estrutura da página: topo, abas, faixa de demonstração e painéis. */
+/* topo */
+.top{background:var(--hdr);color:var(--hdr-ink);position:sticky;top:0;z-index:5}
+.top-in{max-width:1160px;margin:0 auto;padding:14px 16px 0;display:flex;flex-direction:column;gap:12px}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--accent);display:grid;place-items:center;flex:none}
+.brand h1{font-size:1.3rem;font-weight:800}
+.biz{color:var(--hdr-muted);font-size:.9rem;padding-left:12px;border-left:1px solid #2c3a52}
+.sp{flex:1}
+.status{font-size:.8rem;color:var(--hdr-muted)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;padding:10px 14px 12px;border-bottom:3px solid transparent;color:var(--hdr-muted);cursor:pointer;white-space:nowrap;font-weight:600;font-size:.92rem}
+.tab:hover{color:var(--hdr-ink)}
+.tab[aria-selected="true"]{color:#fff;border-bottom-color:var(--accent)}
+
+.demo{background:var(--warn-soft);border-bottom:1px solid var(--line)}
+.demo-in{max-width:1160px;margin:0 auto;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.92rem}
+.demo-in b{color:var(--warn)}
+
+main{max-width:1160px;margin:0 auto;padding:22px 16px 70px}
+.panel{display:none;flex-direction:column;gap:18px}
+.panel.on{display:flex}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+

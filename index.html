@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caixa Certo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/componentes.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg></span>
+      <h1>Caixa Certo</h1>
+      <span class="biz" id="bizName"></span>
+      <span class="sp"></span>
+      <span class="status" id="syncStatus">Carregando…</span>
+      <button class="btn pri" id="btnNovo">+ Lançar</button>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Seções">
+      <button class="tab" role="tab" id="t-hoje" aria-controls="p-hoje" data-tab="hoje" aria-selected="true">Hoje</button>
+      <button class="tab" role="tab" id="t-projecao" aria-controls="p-projecao" data-tab="projecao" aria-selected="false">Projeção</button>
+      <button class="tab" role="tab" id="t-lancamentos" aria-controls="p-lancamentos" data-tab="lancamentos" aria-selected="false">Lançamentos</button>
+      <button class="tab" role="tab" id="t-extrato" aria-controls="p-extrato" data-tab="extrato" aria-selected="false">Importar extrato</button>
+      <button class="tab" role="tab" id="t-resultado" aria-controls="p-resultado" data-tab="resultado" aria-selected="false">Resultado do mês</button>
+      <button class="tab" role="tab" id="t-config" aria-controls="p-config" data-tab="config" aria-selected="false">Configurações</button>
+    </nav>
+  </div>
+</header>
+<div class="demo" id="demoBar" hidden>
+  <div class="demo-in"><span><b>Demonstração.</b> Você está vendo um mercadinho fictício. Nada aqui é salvo.</span><span class="sp"></span><button class="btn sm pri" id="btnComecar">Começar com os meus dados</button></div>
+</div>
+
+<main>
+  <!-- HOJE -->
+  <section class="panel on" id="p-hoje" role="tabpanel" aria-labelledby="t-hoje">
+    <div class="card hero" id="hero"></div>
+    <div id="alertHoje"></div>
+    <div class="tiles" id="tilesHoje"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-h"><h3>Saldo dia a dia neste mês</h3><span class="sp"></span>
+          <div class="legend"><span><i></i>realizado</span><span><i class="d"></i>previsto</span></div></div>
+        <div class="chart-box" id="chartHoje"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>Próximos 7 dias</h3><span class="sp"></span><button class="btn sm ghost" data-goto="projecao">Ver tudo</button></div>
+        <div class="list" id="proximos"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJEÇÃO -->
+  <section class="panel" id="p-projecao" role="tabpanel" aria-labelledby="t-projecao">
+    <div class="card">
+      <div class="card-h">
+        <h2>Vai dar pra pagar tudo?</h2><span class="sp"></span>
+        <div class="seg" id="segHoriz">
+          <button data-h="mes" aria-pressed="false">Até o fim do mês</button>
+          <button data-h="30" aria-pressed="true">30 dias</button>
+          <button data-h="60" aria-pressed="false">60 dias</button>
+        </div>
+      </div>
+      <div id="alertProj"></div>
+      <div class="card-h" style="margin:18px 0 6px"><span class="small muted" id="projNota"></span><span class="sp"></span><div class="legend"><span><i></i>realizado</span><span><i class="d"></i>previsto</span><span><i class="z"></i>abaixo de zero</span></div></div>
+      <div class="chart-box" id="chartProj"></div>
+    </div>
+    <div class="grid2 eq">
+      <div class="card"><div class="card-h"><h3>A pagar</h3><span class="sp"></span><b class="num neg" id="totPagar"></b></div><div class="list" id="listPagar"></div></div>
+      <div class="card"><div class="card-h"><h3>A receber</h3><span class="sp"></span><b class="num pos" id="totReceber"></b></div><div class="list" id="listReceber"></div></div>
+    </div>
+  </section>
+
+  <!-- LANÇAMENTOS -->
+  <section class="panel" id="p-lancamentos" role="tabpanel" aria-labelledby="t-lancamentos">
+    <div class="card">
+      <div class="card-h">
+        <h2>Lançamentos</h2><span class="sp"></span>
+        <div class="filters">
+          <div class="f"><label for="flMes">Mês</label><input type="month" id="flMes"></div>
+          <div class="f"><label for="flTipo">Tipo</label><select id="flTipo"><option value="">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select></div>
+          <div class="f"><label for="flStatus">Situação</label><select id="flStatus"><option value="">Todas</option><option value="realizado">Já aconteceu</option><option value="previsto">Previsto</option></select></div>
+          <div class="f"><label for="flBusca">Buscar</label><input type="text" id="flBusca" placeholder="descrição"></div>
+        </div>
+      </div>
+      <div class="tiles" id="lancTot" style="margin-bottom:16px"></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Descrição</th><th>Forma / Categoria</th><th>Situação</th><th class="r">Valor</th><th></th></tr></thead>
+        <tbody id="tbLanc"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- EXTRATO -->
+  <section class="panel" id="p-extrato" role="tabpanel" aria-labelledby="t-extrato">
+    <div class="card">
+      <div class="card-h"><h2>Importar extrato do banco</h2></div>
+      <ol class="steps">
+        <li>No app ou site do banco, baixe o extrato em <b>OFX</b> (às vezes chamado "Money" ou "Quicken") ou <b>CSV</b>.</li>
+        <li>Solte o arquivo aqui. Cada linha é lida e vai para a categoria certa.</li>
+        <li>Confira as linhas marcadas e clique em Importar. Contas previstas que já foram pagas recebem baixa sozinhas.</li>
+      </ol>
+      <label class="drop" id="drop" for="fileIn"><b>Arraste o extrato aqui</b>ou clique para escolher o arquivo (.ofx ou .csv)</label>
+      <input type="file" id="fileIn" accept=".ofx,.csv,.txt,.qfx" hidden>
+    </div>
+    <div class="card" id="impCard" hidden>
+      <div class="card-h">
+        <h3 id="impTitulo">Conferir antes de importar</h3><span class="sp"></span>
+        <button class="btn" id="btnIA" hidden>Classificar pendentes com IA</button>
+        <button class="btn pri" id="btnImportar">Importar</button>
+      </div>
+      <p class="small muted" id="impResumo" style="margin:0 0 10px"></p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th></th><th>Data</th><th>Descrição no extrato</th><th class="r">Valor</th><th>Forma / Categoria</th><th>Origem</th></tr></thead>
+        <tbody id="tbImp"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- RESULTADO -->
+  <section class="panel" id="p-resultado" role="tabpanel" aria-labelledby="t-resultado">
+    <div class="card-h" style="margin:0"><h2>Resultado do mês</h2><span class="sp"></span><div class="f"><label for="resMes">Mês</label><input type="month" id="resMes"></div></div>
+    <div class="tiles" id="tilesRes"></div>
+    <div class="card">
+      <div class="card-h"><h3>Entradas e saídas por semana</h3><span class="sp"></span><div class="legend"><span><i style="border-color:var(--in);border-top-width:8px"></i>entradas</span><span><i style="border-color:var(--out);border-top-width:8px"></i>saídas</span></div></div>
+      <div class="chart-box" id="chartSem"></div>
+    </div>
+    <div class="grid2 eq">
+      <div class="card"><div class="card-h"><h3>Para onde foi o dinheiro</h3></div><div class="bars" id="barsSaida"></div></div>
+      <div class="card"><div class="card-h"><h3>Como o dinheiro entrou</h3></div><div class="bars" id="barsEntrada"></div></div>
+    </div>
+    <p class="small muted" style="margin:0">Margem de contribuição = entradas − (despesas variáveis + materiais/fornecedores + impostos). É o que sobra das vendas para pagar as despesas fixas e virar lucro. Só conta o que já aconteceu; previstos ficam de fora.</p>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="panel" id="p-config" role="tabpanel" aria-labelledby="t-config">
+    <div class="card">
+      <div class="card-h"><h2>Negócio e saldo inicial</h2></div>
+      <div class="fg">
+        <div class="f"><label for="cfNome">Nome do negócio</label><input type="text" id="cfNome"></div>
+        <div class="f"><label for="cfSaldo">Saldo inicial (R$)</label><input type="text" id="cfSaldo" inputmode="decimal"></div>
+        <div class="f"><label for="cfData">Data do saldo inicial</label><input type="date" id="cfData"></div>
+      </div>
+      <p class="small muted">Lançamentos antes dessa data não mexem no saldo (já estão dentro do saldo inicial), mas continuam aparecendo no resultado do mês.</p>
+      <label class="switch" for="cfMedia"><input type="checkbox" id="cfMedia"> <span>Somar a média de vendas do dia (dinheiro, Pix e débito das últimas 4 semanas) na projeção</span></label>
+      <div style="margin-top:14px"><button class="btn pri" id="cfSalvar">Salvar</button></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Regras aprendidas</h2><span class="sp"></span><span class="small muted">Criadas quando você confirma uma importação</span></div>
+      <div id="regras"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Dados</h2></div>
+      <div class="row"><button class="btn" id="btnCopiarCSV">Copiar lançamentos (CSV)</button><button class="btn" id="btnVerDemo">Ver demonstração</button><button class="btn danger" id="btnApagar">Apagar todos os meus dados</button></div>
+    </div>
+  </section>
+</main>
+
+<!-- MODAL COMEÇAR -->
+<div class="modal-bg" id="mdStart" role="dialog" aria-modal="true" aria-labelledby="stTitulo">
+  <form class="modal" id="fmStart">
+    <h2 id="stTitulo">Começar com os meus dados</h2>
+    <p class="muted" style="margin:0">Informe quanto dinheiro o negócio tem hoje, somando caixa e banco. A partir daí, cada entrada e saída soma ou tira desse saldo.</p>
+    <div class="fg">
+      <div class="f full"><label for="obNome">Nome do negócio</label><input type="text" id="obNome" placeholder="Ex.: Mercadinho São José"></div>
+      <div class="f full"><label for="obSaldo">Saldo de hoje (R$)</label><input type="text" id="obSaldo" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+    <div class="row" style="justify-content:flex-end"><button type="button" class="btn" id="obCancelar">Voltar</button><button type="submit" class="btn pri">Começar</button></div>
+  </form>
+</div>
+
+<!-- MODAL LANÇAMENTO -->
+<div class="modal-bg" id="mdLanc" role="dialog" aria-modal="true" aria-labelledby="mdTitulo">
+  <form class="modal" id="fmLanc">
+    <h2 id="mdTitulo">Novo lançamento</h2>
+    <div class="row">
+      <div class="seg" id="segTipo">
+        <button type="button" class="in" data-t="entrada" aria-pressed="true">Entrada</button>
+        <button type="button" class="out" data-t="saida" aria-pressed="false">Saída</button>
+      </div>
+      <div class="seg" id="segStatus">
+        <button type="button" data-s="realizado" aria-pressed="true">Já aconteceu</button>
+        <button type="button" data-s="previsto" aria-pressed="false">Vai acontecer</button>
+      </div>
+    </div>
+    <div class="fg">
+      <div class="f"><label for="lnValor">Valor (R$)</label><input type="text" id="lnValor" inputmode="decimal" required placeholder="0,00"></div>
+      <div class="f"><label for="lnData">Data</label><input type="date" id="lnData" required></div>
+      <div class="f full"><label for="lnDesc">Descrição</label><input type="text" id="lnDesc" placeholder="Ex.: Venda balcão, conta de luz, fornecedor X"></div>
+      <div class="f full"><label for="lnClass" id="lnClassLb">Forma de recebimento</label><select id="lnClass"></select></div>
+      <div class="f full" id="lnRepWrap"><label for="lnRep">Repetir todo mês (conta fixa)</label><select id="lnRep"><option value="1">Não repetir</option><option value="3">Por 3 meses</option><option value="6">Por 6 meses</option><option value="12">Por 12 meses</option></select></div>
+    </div>
+    <p class="small muted" id="lnDica" style="margin:0"></p>
+    <div class="row">
+      <button type="button" class="btn danger" id="lnExcluir" hidden>Excluir</button>
+      <span class="sp"></span>
+      <button type="button" class="btn" id="lnCancelar">Cancelar</button>
+      <button type="submit" class="btn pri">Salvar</button>
+    </div>
+  </form>
+</div>
+
+<!-- MODAL CONFIRMAR -->
+<div class="modal-bg" id="mdConf" role="dialog" aria-modal="true" aria-labelledby="cfTitulo">
+  <div class="modal">
+    <h2 id="cfTitulo">Tem certeza?</h2>
+    <p id="cfTexto" style="margin:0"></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" id="cfNao">Cancelar</button><button class="btn pri" id="cfSim">Confirmar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- A ordem importa: regras de negócio, depois estado, telas e por fim a inicialização. -->
+<script src="js/dominio/constantes.js"></script>
+<script src="js/dominio/datas.js"></script>
+<script src="js/dominio/valores.js"></script>
+<script src="js/dominio/calculos.js"></script>
+<script src="js/dominio/leitura-extrato.js"></script>
+<script src="js/dominio/classificacao.js"></script>
+<script src="js/dominio/demo.js"></script>
+<script src="js/util.js"></script>
+<script src="js/estado.js"></script>
+<script src="js/animacao.js"></script>
+<script src="js/componentes.js"></script>
+<script src="js/graficos.js"></script>
+<script src="js/telas/hoje.js"></script>
+<script src="js/telas/projecao.js"></script>
+<script src="js/telas/lancamentos.js"></script>
+<script src="js/telas/resultado.js"></script>
+<script src="js/telas/configuracoes.js"></script>
+<script src="js/telas/extrato.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
