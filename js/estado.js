@@ -105,6 +105,14 @@ function entrarDemo() {
 
 function sairDemo() { usarDadosReais(); limparImportacao(); render(); }
 
+/* Quem ainda não tem dados começa com tudo zerado. Grava a data de início já,
+   para o saldo continuar certo nas próximas visitas. */
+function iniciarZerado() {
+  real.cfg = { nome: "Meu negócio", saldoInicial: 0, saldoData: HOJE, regras: [], projVendas: true };
+  sairDemo();
+  persist("cfg");
+}
+
 /* ---------- carga ---------- */
 function lerLocal(chave) {
   const bruto = localStorage.getItem(chave);
@@ -162,7 +170,11 @@ async function init() {
   const pronto = () => {
     carregado = true;
     clearTimeout(aviso);
-    if (!real.cfg && !demo) { entrarDemo(); return; }
+    if (!real.cfg && !demo) {
+      // sem ter lido os dados, não grava nada por cima
+      if (falhaCarga) entrarDemo(); else iniciarZerado();
+      return;
+    }
     if (!demo) usarDadosReais();
     render();
   };
@@ -201,6 +213,6 @@ async function apagarTudo() {
   }
   dirty.clear();
   real = { cfg: null, months: {} };
-  entrarDemo();
+  iniciarZerado();
   toast("Dados apagados");
 }
