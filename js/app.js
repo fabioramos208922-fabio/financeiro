@@ -4,8 +4,12 @@ function render() {
   if (!cfg) return;
   renderHoje();
   renderProj();
+  renderAvisos();
+  renderContatos();
   renderLanc();
   renderRes();
+  renderMetas();
+  renderRelatorios();
   renderCfg();
   // na primeira vez conta do zero; depois, só o que mudou
   animar(painelAtivo(), !render.jaAnimou);
@@ -20,6 +24,7 @@ function showTab(t) {
     const ativa = b.dataset.tab === t;
     b.setAttribute("aria-selected", ativa);
     b.tabIndex = ativa ? 0 : -1;
+    if (ativa) b.scrollIntoView({ block: "nearest", inline: "center" }); // barra do celular rola
   });
   $$(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t));
   if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t);

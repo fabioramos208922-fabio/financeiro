@@ -165,7 +165,7 @@ $("#btnImportar").onclick = () => {
     if (previsto && previsto.status === "previsto") { darBaixa(previsto, doExtrato); n.baixas++; continue; }
     const l = { id: uid(), tipo: r.tipo, status: "realizado", valor: arred(Math.abs(r.valor)), desc: r.desc, criado: Date.now(), ...doExtrato };
     l[r.tipo === "entrada" ? "forma" : "cat"] = r.v;
-    if (previsto) { removeItem(previsto.id); l.id = previsto.id; l.desc = previsto.desc || r.desc; }
+    if (previsto) { removeItem(previsto.id); l.id = previsto.id; l.desc = previsto.desc || r.desc; if (previsto.contatoId) l.contatoId = previsto.contatoId; }
     saveItem(l);
     n.novos++;
     if (r.origemCls === "voce" || r.origemCls === "ia") {

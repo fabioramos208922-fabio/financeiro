@@ -1,10 +1,10 @@
 /* Testes das regras de negócio. Rodar com: node testes/testes.js */
 const fs = require("fs"), path = require("path"), vm = require("vm"), test = require("node:test"), assert = require("node:assert");
 const pasta = path.join(__dirname, "..", "js", "dominio");
-const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo"]
+const codigo = ["constantes", "datas", "valores", "calculos", "leitura-extrato", "classificacao", "demo", "gestao"]
   .map(n => fs.readFileSync(path.join(pasta, n + ".js"), "utf8")).join("\n");
 const d = vm.runInThisContext(`(function(){${codigo}
-return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo};})()`);
+return {parseBR,parseDateAny,addMonths,parseOFX,parseCSV,classify,ruleKey,serie,analisa,resumoMes,saldoRealizado,jaImportado,achaPrevisto,mediaEntradasDia,gerarDemo,saldoContatos,telefoneWhats,dividirParcelas,gerarRepeticoes,dividirBaixa,andamentoMetas,pontoEquilibrio,diasDeFolego,resumoAno,montarCSV,lerBackup,enriquecerDemo};})()`);
 const eq = assert.deepStrictEqual;
 
 test("valores brasileiros", () => {
@@ -71,3 +71,52 @@ test("duplicados e baixa", () => {
 test("demonstração gera dados válidos", () => {
   for (const l of d.gerarDemo("2026-11-24").itens) assert(l.valor > 0 && d.parseDateAny(l.data) === l.data);
 });
+
+test("contatos: em aberto, atraso e telefone", () => {
+  const s = d.saldoContatos([
+    { contatoId: "a", tipo: "entrada", status: "previsto", data: "2026-01-01", valor: 10 },
+    { contatoId: "a", tipo: "entrada", status: "previsto", data: "2026-03-01", valor: 5 },
+    { contatoId: "a", tipo: "saida", status: "previsto", data: "2026-03-01", valor: 7 },
+    { tipo: "entrada", status: "previsto", data: "2026-01-01", valor: 99 }], "2026-02-01");
+  eq([s.a.receber, s.a.atrasado, s.a.pagar, Object.keys(s).length], [15, 10, 7, 1]);
+  eq(d.telefoneWhats("(75) 99999-0000"), "5575999990000");
+  eq(d.telefoneWhats("+55 75 99999-0000"), "5575999990000");
+  eq(d.telefoneWhats("123"), "");
+});
+test("parcelas não perdem centavos e repetições respeitam o calendário", () => {
+  eq(d.dividirParcelas(100, 3), [33.34, 33.33, 33.33]);
+  eq(d.gerarRepeticoes("m3", "2026-01-31", 5).map(x => x.data), ["2026-01-31", "2026-02-28", "2026-03-31"]);
+  eq(d.gerarRepeticoes("s4", "2026-01-31", 5)[1], { data: "2026-02-07", valor: 5, parcela: undefined });
+  eq(d.gerarRepeticoes("p3", "2026-01-10", 100)[2].parcela, "3/3");
+  eq(d.gerarRepeticoes("1", "2026-01-10", 100).length, 1);
+});
+test("baixa parcial mantém o total", () => {
+  const { feito, resto } = d.dividirBaixa({ id: "x", valor: 100.1, status: "previsto", data: "2026-01-01" }, 30.05, "2026-02-01", "n");
+  eq([feito.id, feito.valor, feito.status, resto.id, resto.valor, resto.status], ["n", 30.05, "realizado", "x", 70.05, "previsto"]);
+});
+test("metas, equilíbrio e fôlego", () => {
+  const it = [
+    { tipo: "entrada", status: "realizado", data: "2026-02-02", valor: 1000, forma: "pix" },
+    { tipo: "saida", status: "realizado", data: "2026-02-03", valor: 500, cat: "fornecedor" },
+    { tipo: "saida", status: "realizado", data: "2026-02-03", valor: 200, cat: "fixa" },
+    { tipo: "saida", status: "previsto", data: "2026-02-20", valor: 100, cat: "fornecedor" }];
+  const a = d.andamentoMetas(it, { faturamento: 2000, orcamento: { fornecedor: 550, fixa: 100 } }, "2026-02-14");
+  eq(a.ritmo, 2000);
+  eq(a.faltaPorDia, 1000 / 15);
+  eq(a.orcamento.map(o => [o.k, o.estado]), [["fixa", "bad"], ["fornecedor", "warn"]]);
+  eq(d.pontoEquilibrio(a.r), 400);
+  eq(d.diasDeFolego(it, 350, "2026-02-13"), 5);
+  eq(d.diasDeFolego([], 350, "2026-02-13"), null);
+  const ano = d.resumoAno(it, "2026");
+  eq([ano.total.entradas, ano.total.resultado, ano.meses[1].fixas], [1000, 300, 200]);
+});
+test("backup: ida e volta, e recusa de arquivo ruim", () => {
+  const item = { id: "1", tipo: "entrada", status: "realizado", data: "2026-01-05", valor: 10, desc: "x", origem: "manual", criado: 1, forma: "pix" };
+  const arq = JSON.stringify({ app: "caixacerto", cfg: { nome: "N", saldoInicial: 5, saldoData: "2026-01-01", contatos: [{ id: "c", nome: "Z" }] }, months: { errado: [item, item, { id: "2", valor: "<b>" }] } });
+  const b = d.lerBackup(arq);
+  eq(b.months, { "2026-01": [item] });
+  eq([b.total, b.ignorados, b.cfg.contatos[0].nome], [1, 2, "Z"]);
+  assert.throws(() => d.lerBackup("oi"));
+  assert.throws(() => d.lerBackup("{}"));
+});
+test("CSV escapa texto", () => eq(d.montarCSV([["a;b", 1.5, 'c"d']]), '"a;b";1,50;"c""d"'));

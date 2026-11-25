@@ -36,8 +36,13 @@ document.addEventListener("keydown", e => {
   else if (!e.shiftKey && (fora || atual === ultimo)) { e.preventDefault(); primeiro.focus(); }
 });
 
-let aoConfirmar = null;
-function confirmar(titulo, texto, cb) {
+let aoConfirmar = null, aoExtra = null;
+/* extra: segunda opção, {texto, cb}. */
+function confirmar(titulo, texto, cb, extra) {
+  aoExtra = extra ? extra.cb : null;
+  $("#cfExtra").hidden = !extra;
+  $("#cfExtra").textContent = extra ? extra.texto : "";
+  $("#cfSim").textContent = extra ? "Só este" : "Confirmar";
   $("#cfTitulo").textContent = titulo;
   $("#cfTexto").textContent = texto;
   aoConfirmar = cb;
@@ -45,6 +50,17 @@ function confirmar(titulo, texto, cb) {
 }
 $("#cfNao").onclick = () => fecharModal("#mdConf");
 $("#cfSim").onclick = () => { fecharModal("#mdConf"); if (aoConfirmar) aoConfirmar(); };
+
+$("#cfExtra").onclick = () => { fecharModal("#mdConf"); if (aoExtra) aoExtra(); };
+
+function baixarArquivo(nome, conteudo, tipo) {
+  const url = URL.createObjectURL(new Blob([conteudo], { type: tipo }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nome;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
 
 /* ---------- lançamentos ---------- */
 const ehEntrada = l => l.tipo === "entrada";
@@ -66,7 +82,7 @@ function liPrev(l) {
   const atras = l.data < HOJE;
   return `<div class="li">
     <span class="cal ${atras ? "late" : ""}"><b>${l.data.slice(8, 10)}</b><span>${atras ? "atras." : SEM[wd(l.data)]}</span></span>
-    <span><span class="t1">${esc(l.desc || rotulo(l))}</span><span class="t2">${quadrado(corDe(l))}${rotulo(l)}</span></span>
+    <span><span class="t1">${esc(l.desc || rotulo(l))}</span><span class="t2">${quadrado(corDe(l))}${rotulo(l)}${nomeContato(l) ? " · " + esc(nomeContato(l)) : ""}</span></span>
     <span class="num amt ${classeValor(ehEntrada(l))}">${fmtSinal(signed(l))}</span>
     ${botaoBaixa(l)}</div>`;
 }

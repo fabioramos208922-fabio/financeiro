@@ -2,6 +2,7 @@
 function renderCfg() {
   $("#btnVerDemo").hidden = $("#btnApagar").hidden = demo;
   renderRegras();
+  $("#bkNota").textContent = cfg.backupEm ? `Último backup em ${dBRy(cfg.backupEm)}. Guarde o arquivo fora deste computador.` : "Nenhum backup feito ainda. O arquivo guarda tudo: lançamentos, contatos, metas e regras.";
   // Não sobrescreve um campo enquanto a pessoa digita.
   const foco = document.activeElement;
   if (foco && foco.matches("#p-config input")) return;
@@ -35,12 +36,42 @@ $("#btnVerDemo").onclick = () => { entrarDemo(); showTab("hoje"); window.scrollT
 $("#btnApagar").onclick = () => confirmar("Apagar todos os seus dados?",
   "Todos os lançamentos, regras e o saldo inicial serão apagados. Não dá para desfazer.", apagarTudo);
 
-$("#btnCopiarCSV").onclick = async () => {
-  const campo = s => (/[;"\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s);
+function csvLancamentos() {
   const linhas = allItens().sort((a, b) => a.data.localeCompare(b.data))
-    .map(l => [l.data, l.tipo, l.status, l.desc || "", rotulo(l), l.valor.toFixed(2).replace(".", ",")]);
-  const csv = [["data", "tipo", "situacao", "descricao", "forma_ou_categoria", "valor"], ...linhas]
-    .map(r => r.map(campo).join(";")).join("\n");
+    .map(l => [l.data, l.tipo, l.status, l.desc || "", rotulo(l), nomeContato(l), l.valor]);
+  return montarCSV([["data", "tipo", "situacao", "descricao", "forma_ou_categoria", "contato", "valor"], ...linhas]);
+}
+
+$("#btnBaixarCSV").onclick = () => { if (cfg) baixarArquivo(`caixa-certo-lancamentos-${HOJE}.csv`, "\uFEFF" + csvLancamentos(), "text/csv"); };
+
+/* ---------- backup ---------- */
+$("#btnBackup").onclick = () => {
+  if (demo || !real.cfg) { toast("Saia da demonstração para fazer o backup dos seus dados."); return; }
+  baixarArquivo(`caixa-certo-backup-${HOJE}.json`, JSON.stringify({ app: "caixacerto", versao: 1, criado: HOJE, cfg: real.cfg, months: real.months }, null, 1), "application/json");
+  cfg.backupEm = HOJE;
+  persist("cfg");
+  render();
+  toast("Backup baixado. Guarde o arquivo em lugar seguro.");
+};
+$("#btnRestaurar").onclick = () => {
+  if (falhaCarga) { toast("Não consegui ler seus dados. Recarregue a página antes de restaurar."); return; }
+  $("#bkFile").click();
+};
+$("#bkFile").addEventListener("change", async e => {
+  const f = e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  let b;
+  try { b = lerBackup(await f.text()); } catch (err) { toast(err.message); return; }
+  confirmar("Restaurar este backup?", `Os dados atuais serão trocados por "${b.cfg.nome}", com ${b.total} lançamentos${b.ignorados ? ` (${b.ignorados} inválidos ficam de fora)` : ""}. Não dá para desfazer: se tiver dúvida, faça um backup antes.`, () => {
+    restaurar(b);
+    showTab("hoje");
+    toast("Backup restaurado");
+  });
+});
+
+$("#btnCopiarCSV").onclick = async () => {
+  const csv = csvLancamentos();
   try {
     await navigator.clipboard.writeText(csv);
     toast("Copiado. Cole numa planilha.");

@@ -94,7 +94,7 @@ function usarDadosReais() {
 
 function entrarDemo() {
   demo = true;
-  const d = gerarDemo(HOJE);
+  const d = enriquecerDemo(gerarDemo(HOJE));
   cfg = d.cfg;
   months = {};
   for (const l of d.itens) (months[monthKey(l.data)] = months[monthKey(l.data)] || []).push(l);
@@ -193,6 +193,17 @@ async function init() {
     setSync(err.code === "revoked" ? "Acesso encerrado" : "Sem conexão com os dados");
     pronto();
   });
+}
+
+/* ---------- restaurar backup ---------- */
+function restaurar(b) {
+  // meses que não estão no backup ficam vazios
+  const ids = new Set([...Object.keys(real.months), ...Object.keys(b.months)]);
+  real.cfg = b.cfg;
+  real.months = Object.fromEntries([...ids].map(mk => [mk, b.months[mk] || []]));
+  sairDemo();
+  persist("cfg");
+  ids.forEach(mk => persist("m-" + mk));
 }
 
 /* ---------- apagar tudo ---------- */

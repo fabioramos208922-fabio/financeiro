@@ -2,7 +2,7 @@
 function linhaLanc(l) {
   const previsto = l.status === "previsto", entrada = ehEntrada(l);
   return `<tr class="${previsto ? "prev" : ""}">
-    <td>${esc(l.desc || "—")}${l.origem === "extrato" ? ' <span class="chip mut">extrato</span>' : ""}</td>
+    <td>${esc(l.desc || "—")}${l.parcela ? ` <span class="chip mut">${esc(l.parcela)}</span>` : ""}${nomeContato(l) ? `<br><span class="small muted">${esc(nomeContato(l))}</span>` : ""}${l.origem === "extrato" ? ' <span class="chip mut">extrato</span>' : ""}</td>
     <td>${chipCls(l)}</td>
     <td>${previsto ? `<span class="chip warn">${entrada ? "a receber" : "a pagar"}</span>` : '<span class="small muted">feito</span>'}</td>
     <td class="r num ${classeValor(entrada)}" style="font-weight:600;white-space:nowrap">${fmtSinal(signed(l))}</td>
@@ -12,9 +12,9 @@ function linhaLanc(l) {
 function renderLanc() {
   if (!cfg) return;
   if (!$("#flMes").value) $("#flMes").value = monthKey(HOJE);
-  const mk = $("#flMes").value, tipo = $("#flTipo").value, status = $("#flStatus").value, busca = norm($("#flBusca").value);
+  const mk = $("#flMes").value, tipo = $("#flTipo").value, status = $("#flStatus").value, busca = norm($("#flBusca").value), cat = $("#flCat").value;
   const list = allItens()
-    .filter(l => monthKey(l.data) === mk && (!tipo || l.tipo === tipo) && (!status || l.status === status) && (!busca || norm(l.desc).includes(busca)))
+    .filter(l => monthKey(l.data) === mk && (!tipo || l.tipo === tipo) && (!status || l.status === status) && (!cat || (ehEntrada(l) ? "e-" + l.forma : "s-" + l.cat) === cat) && (!busca || norm(l.desc + " " + nomeContato(l)).includes(busca)))
     .sort((a, b) => b.data.localeCompare(a.data) || a.tipo.localeCompare(b.tipo));
   const porDia = {};
   for (const l of list) porDia[l.data] = (porDia[l.data] || 0) + signed(l);
@@ -35,7 +35,9 @@ function renderLanc() {
     + tile("Saídas", contar(s), "", "neg") + tile("Diferença", contar(e - s), "", classeValor(e - s >= 0));
 }
 
-["#flMes", "#flTipo", "#flStatus"].forEach(s => $(s).addEventListener("change", renderLanc));
+const opcoesFiltro = (pre, o) => Object.entries(o).map(([k, v]) => `<option value="${pre}-${k}">${v}</option>`).join("");
+$("#flCat").innerHTML = `<option value="">Todas</option><optgroup label="Entradas">${opcoesFiltro("e", FORMAS)}</optgroup><optgroup label="Saídas">${opcoesFiltro("s", CATS)}</optgroup>`;
+["#flMes", "#flTipo", "#flStatus", "#flCat"].forEach(s => $(s).addEventListener("change", renderLanc));
 $("#flBusca").addEventListener("input", renderLanc);
 
 /* ---------- formulário ---------- */
@@ -64,6 +66,12 @@ function atualizarDica() {
   $("#lnDica").textContent = t;
 }
 
+/* Outros previstos da mesma repetição, a partir desta data. */
+function proximosDaSerie(l) {
+  if (!l.grupo) return [];
+  return allItens().filter(x => x.grupo === l.grupo && x.id !== l.id && x.status === "previsto" && x.data >= l.data);
+}
+
 function abrirLanc(l) {
   edit = l || null;
   mTipo = l ? l.tipo : "entrada";
@@ -73,6 +81,11 @@ function abrirLanc(l) {
   $("#lnData").value = l ? l.data : HOJE;
   $("#lnDesc").value = (l && l.desc) || "";
   $("#lnRep").value = "1";
+  $("#lnContato").value = l ? nomeContato(l) : "";
+  $("#lnTodos").checked = false;
+  $("#lnTodosWrap").hidden = !l || !proximosDaSerie(l).length;
+  $("#lnParte").hidden = !l || l.status !== "previsto";
+  $("#lnParte").textContent = l && ehEntrada(l) ? "Recebi uma parte" : "Paguei uma parte";
   atualizarForm();
   if (l) $("#lnClass").value = (ehEntrada(l) ? l.forma : l.cat) || $("#lnClass").value;
   atualizarDica();
@@ -87,17 +100,24 @@ function salvarLanc(e) {
   if (!data) { toast("Escolha a data"); return; }
   if (mStatus === "realizado" && data > HOJE) { toast('Essa data ainda não chegou. Escolha "Vai acontecer" ou mude a data.'); return; }
 
-  const { forma, cat, ...resto } = edit || { origem: "manual", criado: Date.now() };
+  const { forma, cat, contatoId, ...resto } = edit || { origem: "manual", criado: Date.now() };
   const base = { ...resto, tipo: mTipo, status: mStatus, valor, desc: $("#lnDesc").value.trim() };
   base[mTipo === "entrada" ? "forma" : "cat"] = $("#lnClass").value;
+  const contato = contatoPorNome($("#lnContato").value, mTipo === "entrada" ? "cliente" : "fornecedor");
+  if (contato) base.contatoId = contato.id;
   if (edit) {
+    const proximos = $("#lnTodos").checked ? proximosDaSerie(edit) : [];
     removeItem(edit.id);
     saveItem({ ...base, data });
-    toast("Lançamento atualizado");
+    for (const p of proximos) {
+      saveItem({ ...base, id: p.id, data: p.data, status: p.status, criado: p.criado, parcela: p.parcela });
+    }
+    toast(proximos.length ? `${proximos.length + 1} lançamentos atualizados` : "Lançamento atualizado");
   } else {
-    const rep = mStatus === "previsto" ? Number($("#lnRep").value) : 1;
-    for (let i = 0; i < rep; i++) saveItem({ ...base, id: uid(), data: addMonths(data, i) });
-    toast(rep > 1 ? `${rep} lançamentos criados, um por mês` : "Lançamento salvo");
+    const lista = gerarRepeticoes(mStatus === "previsto" ? $("#lnRep").value : "1", data, valor);
+    const grupo = lista.length > 1 ? uid() : undefined;
+    for (const x of lista) saveItem({ ...base, ...x, id: uid(), grupo });
+    toast(lista.length > 1 ? `${lista.length} lançamentos criados, de ${dBRy(data)} a ${dBRy(lista[lista.length - 1].data)}` : "Lançamento salvo");
   }
   fecharModal("#mdLanc");
   render();
@@ -117,11 +137,42 @@ $("#fmLanc").addEventListener("submit", salvarLanc);
 $("#btnNovo").onclick = () => { if (cfg) abrirLanc(null); else toast("Carregando…"); };
 $("#lnExcluir").onclick = () => {
   if (!edit) return;
-  const l = edit;
+  const l = edit, proximos = proximosDaSerie(l);
+  const extra = proximos.length && { texto: `Este e os próximos ${proximos.length}`, cb: () => {
+    [l, ...proximos].forEach(x => removeItem(x.id));
+    fecharModal("#mdLanc");
+    render();
+    toast(`${proximos.length + 1} lançamentos excluídos`);
+  } };
   confirmar("Excluir lançamento?", `"${l.desc || rotulo(l)}" de ${fmt(l.valor)} será apagado.`, () => {
     removeItem(l.id);
     fecharModal("#mdLanc");
     render();
     toast("Lançamento excluído");
-  });
+  }, extra);
 };
+
+/* ---------- baixa parcial ---------- */
+let parteDe = null;
+$("#lnParte").onclick = () => {
+  parteDe = edit;
+  if (!parteDe) return;
+  fecharModal("#mdLanc");
+  $("#ptTitulo").textContent = ehEntrada(parteDe) ? "Recebi uma parte" : "Paguei uma parte";
+  $("#ptTexto").textContent = `${parteDe.desc || rotulo(parteDe)}: ${fmt(parteDe.valor)} em aberto. O que faltar continua previsto.`;
+  $("#ptValor").value = "";
+  abrirModal("#mdParte", "#ptValor");
+};
+$("#ptCancelar").onclick = () => fecharModal("#mdParte");
+$("#fmParte").addEventListener("submit", e => {
+  e.preventDefault();
+  const l = parteDe && findItem(parteDe.id), v = arred(parseBR($("#ptValor").value));
+  if (!l || l.status !== "previsto") { fecharModal("#mdParte"); return; }
+  if (!(v > 0) || v >= l.valor) { toast(`Digite um valor maior que zero e menor que ${fmt(l.valor)}`); return; }
+  const { feito, resto } = dividirBaixa(l, v, HOJE, uid());
+  saveItem(resto);
+  saveItem(feito);
+  fecharModal("#mdParte");
+  render();
+  toast(`Registrado. Ainda faltam ${fmt(resto.valor)}`);
+});

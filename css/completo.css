@@ -1,0 +1,28 @@
+/* Avisos, metas, relatórios e impressão. */
+a.btn{color:inherit;text-decoration:none;display:inline-block}
+.aviso{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 14px;border-radius:12px;background:var(--warn-soft);color:var(--warn)}
+.aviso.bad{background:var(--out-soft);color:var(--out)}
+.aviso + .aviso{margin-top:8px}
+.aviso .btn{background:var(--surface);color:var(--ink);white-space:nowrap}
+.meta{display:flex;flex-direction:column;gap:6px;padding:12px 0}
+.meta + .meta{border-top:1px solid var(--line)}
+.meta-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.meta-tr{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.meta-tr span{display:block;height:100%;border-radius:6px}
+.modal > .row{flex-wrap:wrap}
+#tbAno td{white-space:nowrap}
+@media (max-width:900px){
+  .tabs{overflow-x:auto;scrollbar-width:none}
+  .tab{flex:1 0 62px}
+}
+@media print{
+  @page{margin:12mm}
+  body{padding:0;background:#fff;min-height:0}
+  body::before,body::after,.top,.demo,.toast,.modal-bg,.nao-imprime,main .btn,.filters{display:none!important}
+  main{max-width:none;padding:0}
+  .card,.tile{box-shadow:none;break-inside:avoid}
+  .tbl-wrap{overflow:visible}
+  table{font-size:.72rem}
+  #tbAno td,#tbAno th{padding:5px 4px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
